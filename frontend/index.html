@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LMNA 基因特征与药物筛选系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem 0; margin-bottom: 2rem; }
+        .card { border: none; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+        .gene-tag { display: inline-block; padding: 2px 8px; margin: 2px; border-radius: 4px; font-size: 0.85rem; }
+        .gene-up { background-color: #ffe0e0; color: #c0392b; }
+        .gene-down { background-color: #e0f0ff; color: #2980b9; }
+        .drug-score { font-weight: bold; font-family: monospace; }
+        .loading-spinner { display: none; }
+        .task-status { font-size: 0.9rem; }
+        .task-status.pending { color: #f39c12; }
+        .task-status.running { color: #3498db; }
+        .task-status.completed { color: #27ae60; }
+        .task-status.failed { color: #e74c3c; }
+        pre { background: #f4f4f4; padding: 10px; border-radius: 4px; max-height: 400px; overflow: auto; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="container">
+        <h1>基因特征定义与药物筛选系统</h1>
+        <p class="mb-0">基于 LINCS L1000 数据库，计算基因敲低签名并筛选逆转药物</p>
+    </div>
+</div>
+
+<div class="container">
+    <!-- 输入区 -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">输入基因名</h5>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <input type="text" id="geneInput" class="form-control" placeholder="例如: LMNA, TP53, MYC" value="LMNA">
+                </div>
+                <div class="col-md-3">
+                    <select id="methodSelect" class="form-select">
+                        <option value="xsum" selected>XSUM（论文方法）</option>
+                        <option value="wtcs">WTCS（连接图方法）</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button id="submitBtn" class="btn btn-primary w-100" onclick="submitTask()">
+                        <span class="spinner-border spinner-border-sm loading-spinner" id="btnSpinner"></span>
+                        开始计算
+                    </button>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-outline-secondary w-100" onclick="checkGene()">检查数据</button>
+                </div>
+            </div>
+            <div id="geneStatus" class="mt-3"></div>
+        </div>
+    </div>
+
+    <!-- 任务状态 -->
+    <div class="card mb-4" id="taskCard" style="display:none;">
+        <div class="card-body">
+            <h5 class="card-title">任务状态</h5>
+            <p>Task ID: <code id="taskId"></code></p>
+            <p class="task-status" id="taskStatus">等待中...</p>
+            <div class="progress">
+                <div id="taskProgress" class="progress-bar progress-bar-striped progress-bar-animated" style="width: 0%"></div>
+            </div>
+            <pre id="taskDetail" class="mt-2"></pre>
+        </div>
+    </div>
+
+    <!-- 结果区 -->
+    <div id="results" style="display:none;">
+        <!-- Signature 概览 -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">基因签名概览</h5>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="text-center p-3 bg-light rounded">
+                            <h3 id="sigNSamples" class="text-primary">-</h3>
+                            <small>shRNA 样本数</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center p-3 bg-light rounded">
+                            <h3 id="sigNUp" class="text-danger">-</h3>
+                            <small>上调基因</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center p-3 bg-light rounded">
+                            <h3 id="sigNDown" class="text-info">-</h3>
+                            <small>下调基因</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center p-3 bg-light rounded">
+                            <h3 id="sigMethod" class="text-success">-</h3>
+                            <small>筛药方法</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 上调基因 -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title text-danger">上调基因（敲低后表达上升）</h5>
+                <div id="upGenesList" class="mt-2"></div>
+            </div>
+        </div>
+
+        <!-- 下调基因 -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title text-info">下调基因（敲低后表达下降）</h5>
+                <div id="downGenesList" class="mt-2"></div>
+            </div>
+        </div>
+
+        <!-- Top 药物 -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title text-success">Top 逆转药物（高分 = 强逆转效果）</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead><tr><th>#</th><th>药物名</th><th>Score</th></tr></thead>
+                        <tbody id="topDrugsTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom 药物 -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title text-warning">Bottom 药物（低分 = 加重效果）</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead><tr><th>#</th><th>药物名</th><th>Score</th></tr></thead>
+                        <tbody id="bottomDrugsTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 导出 -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">导出结果</h5>
+                <button class="btn btn-outline-primary" onclick="exportJSON()">导出 JSON</button>
+                <button class="btn btn-outline-secondary ms-2" onclick="exportCSV()">导出 CSV</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const API_BASE = 'http://localhost:8001';
+let currentResult = null;
+
+async function checkGene() {
+    const gene = document.getElementById('geneInput').value.trim().toUpperCase();
+    if (!gene) return alert('请输入基因名');
+
+    try {
+        const res = await fetch(`${API_BASE}/api/genes/${gene}/status`);
+        const data = await res.json();
+        const el = document.getElementById('geneStatus');
+        if (data.available) {
+            el.innerHTML = `<div class="alert alert-success">
+                <strong>${gene}</strong> 可用！shRNA 样本数: ${data.n_shrna_samples}
+                ${data.cached ? '(签名已缓存)' : ''}
+            </div>`;
+        } else {
+            el.innerHTML = `<div class="alert alert-danger">
+                <strong>${gene}</strong> 无 shRNA 数据
+            </div>`;
+        }
+    } catch (e) {
+        alert('检查失败: ' + e.message);
+    }
+}
+
+async function submitTask() {
+    const gene = document.getElementById('geneInput').value.trim().toUpperCase();
+    const method = document.getElementById('methodSelect').value;
+    if (!gene) return alert('请输入基因名');
+
+    document.getElementById('btnSpinner').style.display = 'inline-block';
+    document.getElementById('submitBtn').disabled = true;
+
+    try {
+        const res = await fetch(`${API_BASE}/api/genes/${gene}/compute`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({method})
+        });
+        const data = await res.json();
+        if (res.ok) {
+            document.getElementById('taskCard').style.display = 'block';
+            document.getElementById('taskId').textContent = data.task_id;
+            document.getElementById('taskStatus').textContent = '等待中...';
+            document.getElementById('taskStatus').className = 'task-status pending';
+            document.getElementById('results').style.display = 'none';
+            pollTask(data.task_id);
+        } else {
+            alert(data.detail || '提交失败');
+        }
+    } catch (e) {
+        alert('提交失败: ' + e.message);
+    } finally {
+        document.getElementById('btnSpinner').style.display = 'none';
+        document.getElementById('submitBtn').disabled = false;
+    }
+}
+
+function pollTask(taskId) {
+    const interval = setInterval(async () => {
+        try {
+            const res = await fetch(`${API_BASE}/api/tasks/${taskId}`);
+            const data = await res.json();
+            const statusEl = document.getElementById('taskStatus');
+            statusEl.textContent = data.message || data.status;
+            statusEl.className = 'task-status ' + data.status;
+
+            if (data.status === 'running') {
+                document.getElementById('taskProgress').style.width = '60%';
+            }
+
+            if (data.status === 'completed') {
+                clearInterval(interval);
+                document.getElementById('taskProgress').style.width = '100%';
+                document.getElementById('taskDetail').textContent = JSON.stringify(data.result, null, 2);
+                showResults(data.result);
+            } else if (data.status === 'failed') {
+                clearInterval(interval);
+                document.getElementById('taskProgress').style.width = '100%';
+                document.getElementById('taskProgress').classList.add('bg-danger');
+                document.getElementById('taskDetail').textContent = data.error || '未知错误';
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }, 3000);
+}
+
+function showResults(result) {
+    currentResult = result;
+    const sig = result.signature;
+    const drugs = result.drug_results;
+
+    document.getElementById('sigNSamples').textContent = sig.n_samples;
+    document.getElementById('sigNUp').textContent = sig.n_up_genes;
+    document.getElementById('sigNDown').textContent = sig.n_down_genes;
+    document.getElementById('sigMethod').textContent = drugs.method.toUpperCase();
+
+    // 上调基因
+    const upEl = document.getElementById('upGenesList');
+    upEl.innerHTML = sig.up_genes.map(g => `<span class="gene-tag gene-up">${g}</span>`).join('');
+
+    // 下调基因
+    const downEl = document.getElementById('downGenesList');
+    downEl.innerHTML = sig.down_genes.map(g => `<span class="gene-tag gene-down">${g}</span>`).join('');
+
+    // Top 药物
+    const topBody = document.getElementById('topDrugsTable');
+    topBody.innerHTML = drugs.top_drugs.map((d, i) =>
+        `<tr><td>${i+1}</td><td>${d.drug_name}</td><td class="drug-score text-success">${d.score}</td></tr>`
+    ).join('');
+
+    // Bottom 药物
+    const bottomBody = document.getElementById('bottomDrugsTable');
+    bottomBody.innerHTML = drugs.bottom_drugs.map((d, i) =>
+        `<tr><td>${i+1}</td><td>${d.drug_name}</td><td class="drug-score text-danger">${d.score}</td></tr>`
+    ).join('');
+
+    document.getElementById('results').style.display = 'block';
+}
+
+function exportJSON() {
+    if (!currentResult) return;
+    const blob = new Blob([JSON.stringify(currentResult, null, 2)], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${currentResult.signature.gene_name}_results.json`;
+    a.click();
+}
+
+function exportCSV() {
+    if (!currentResult) return;
+    const sig = currentResult.signature;
+    let csv = 'Type,Name,Score\n';
+    sig.up_genes.forEach(g => csv += `Up,${g},\n`);
+    sig.down_genes.forEach(g => csv += `Down,${g},\n`);
+    currentResult.drug_results.top_drugs.forEach(d => csv += `TopDrug,${d.drug_name},${d.score}\n`);
+    currentResult.drug_results.bottom_drugs.forEach(d => csv += `BottomDrug,${d.drug_name},${d.score}\n`);
+
+    const blob = new Blob([csv], {type: 'text/csv'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${sig.gene_name}_results.csv`;
+    a.click();
+}
+</script>
+
+</body>
+</html>

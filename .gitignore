@@ -1,0 +1,8 @@
+cache/
+SERVER_CONNECTION.md
+*.log
+*.pid
+*.bak
+__pycache__/
+*.pyc
+.claude/
