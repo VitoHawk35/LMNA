@@ -107,6 +107,9 @@ class L5Provider(IDataProvider):
         ].copy()
         return df
 
+    def get_all_shrna_samples(self) -> pd.DataFrame:
+        return self._shrna_df.copy()
+
     def get_expression_matrix(self, sig_ids: List[str], chunk_size: int = 5000) -> np.ndarray:
         """
         分块提取表达矩阵，避免一次性读取大量列导致内存和 I/O 瓶颈。

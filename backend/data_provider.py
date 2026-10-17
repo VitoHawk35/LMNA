@@ -37,6 +37,19 @@ class IDataProvider(ABC):
         pass
 
     @abstractmethod
+    def get_all_shrna_samples(self) -> pd.DataFrame:
+        """
+        获取所有 shRNA 敲低样本信息（不是某个基因的子集）
+
+        供 SignatureEngine 构建全局 shRNA null 池使用，替代对 provider
+        私有属性（如 _shrna_df）的访问。
+
+        Returns:
+            DataFrame，至少包含 sig_id 列；调用方不应修改返回对象
+        """
+        pass
+
+    @abstractmethod
     def get_gene_symbols(self) -> List[str]:
         """
         获取 978 个 landmark gene symbol 列表（按矩阵行顺序）
