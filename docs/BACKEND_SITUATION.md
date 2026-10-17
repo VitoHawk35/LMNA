@@ -1,7 +1,7 @@
 # LMNA 后端现状说明（Backend Situation）
 
 > 文档性质：长期维护用的“现状说明书”，不是设计提案，也不是部署手册的替代品。
-> 适用代码：GitHub `main` @ `8d367b6`（2026-10-18，L0–L4/L6/L8/L2 已合并）。
+> 适用代码：GitHub `main` @ `1850826`（2026-10-18；基线 `8d367b6` 已含 L0–L4/L6/L8/L2，随后合并 L5 `4517e43` 与本文档 `1850826`）。正文中标注 `8d367b6` 的行号均以该基线核对；L5 之后仅前端/文档变化，后端行号不受影响。
 > 现网对象：老实例 `~/lmna_app/LMNA`（v1）与新实例 `~/lmna_v2`（v2）。
 > 最后核对：2026-10-18，代码为工作区 `D:\agent-workspace\worktrees\task-DOC`；服务器为 `keji@10.39.15.238`，全程只读（未改代码、未删缓存、未重启服务）。
 > 维护规则：任何改变 API 字段、缓存文件名、统计口径、部署端口或启动方式的提交，都必须同步更新本文对应章节；纯重构也必须更新“模块清单”和“修复历史”。
@@ -19,7 +19,7 @@
 
 重要原则：
 
-1. 以代码为准，不以旧交付说明为准。旧交付说明里的行号是当时的基线，合并后可能漂移；本文行号按 `8d367b6` 重新核对。
+1. 以代码为准，不以旧交付说明为准。旧交付说明里的行号是当时的基线，合并后可能漂移；本文行号按 `8d367b6` 重新核对（L5 合并只改前端与文案，不影响后端行号）。
 2. v1 是**独立代码线**，不在 GitHub 仓库里；不能用 GitHub `main` 的行为去描述 v1。
 3. 服务器上的数据副本有两份：共享 `~/cmap/cmap_data` 与 v2 专用 `~/cmap_v2_data`。两者只有 CSV 不同，矩阵/GCTX 是软链接。不要把“v2 已修复”误写成“共享数据已修复”。
 
@@ -31,7 +31,7 @@
 
 | 代码线 | 位置 | 基线/版本 | 用途 | 与 GitHub 的关系 |
 |---|---|---|---|---|
-| GitHub 主线 | `origin/main` | `8d367b6` | 后续开发、v2 部署 | 唯一权威仓库 |
+| GitHub 主线 | `origin/main` | `1850826`（基线 `8d367b6` + L5 + 本文档） | 后续开发、v2 部署 | 唯一权威仓库 |
 | v1 现网 | `~/lmna_app/LMNA`（服务器） | 无 git 版本信息；含 `l4zsvc`/FDA/export/figure3 | 老服务，继续对外 | **不在仓库内**，是历史分支 |
 | v2 新实例 | `~/lmna_v2`（服务器） | `8d367b6` | 新端口验证 | 后端 13 个 `.py` 与 `8d367b6` 的 md5 **逐文件完全一致**【实测】 |
 
@@ -56,7 +56,7 @@ task_queue.py           f526696286644e38010ec7275a8884d3
 只有 v2 前端被部署时改过一行：仓库 `frontend/index.html:165` 是 `const API_BASE = 'http://localhost:8001';`，服务器 v2 上改成 `https://10.39.15.238:8004`【实测】。因此：
 
 - 不要把服务器上的 v2 前端当成仓库内容；
-- 正式前端任务（L5）尚未提交，`fix/L5-frontend` 分支当前与 `main` 同点 `8d367b6`【实测】。
+- 正式前端任务（L5）已于 2026-10-18 完成并合并（`6812e33` → 合并提交 `4517e43`）；仓库 `main` 现为 `1850826`（含 L5 与本文档）。服务器 v2 前端仍是部署时的旧版（`API_BASE` 硬编码），需另行部署才会生效。
 
 ### 1.2 端口与访问地址
 
@@ -1205,7 +1205,7 @@ EGFR	true	false	true	HPA+UniProt	2026-10	...
 | L4 | `fix/L4-drug-null` | `2ce1bcb` | `4697806` | 2026-10-18 | 药物级随机签名 null、p/FDR/null_z、mode 排序 |
 | L3 | `fix/L3-suitability` | `20b4611` | `f26413f` | 2026-10-18 | 适用性 precheck/LOHO/判档、mode、红档屏蔽 |
 | L8 | `fix/L8-col-order` | `d4d3835`、`520086b` | `7cc2d7b` | 2026-10-18 | col/row 顺序修复脚本、哨兵、复核脚本；部署时修 v2 副本 |
-| L2 | `fix/L2-cache-versioning` | `6f20f5c` | `8d367b6`（HEAD） | 2026-10-18 | 参数哈希、ALGO_VERSION、文件锁、原子写 |
+| L2 | `fix/L2-cache-versioning` | `6f20f5c` | `8d367b6`（当时 HEAD） | 2026-10-18 | 参数哈希、ALGO_VERSION、文件锁、原子写 |
 
 ### 7.1 每个任务具体改了什么
 
@@ -1229,12 +1229,14 @@ EGFR	true	false	true	HPA+UniProt	2026-10	...
                   └─ 4697806 merge L4
                       └─ f26413f merge L3
                           └─ 7cc2d7b merge L8
-                              └─ 8d367b6 merge L2（当前 origin/main）
+                              └─ 8d367b6 merge L2
+                                  └─ 4517e43 merge L5
+                                      └─ 1850826 merge docs-backend（当前 origin/main）
 ```
 
 ### 7.3 尚未完成的任务
 
-- **L5 前端**：`fix/L5-frontend` 当前与 `main` 同点 `8d367b6`，没有独立提交；前端仍是旧版（无 qc/FDR/适用性/红档 UI，`API_BASE` 硬编码）。
+- **L5 前端**：已于 2026-10-18 完成并合并（`6812e33` → 合并提交 `4517e43`）；同源部署、适用性卡片、FDR 列、换肤、XSS 已落地。仍未完成的是“导出 / FDA 按钮”移植（v1 的 export/Figure3 未进 l5 版），属单独任务。
 - **L3Provider**：`backend/l3_provider.py` 仍是 `NotImplementedError`；L7e 有设计文档。
 - **L7a/L7b/L7c/L7d/L7f**：只有设计文档，未实施。
 
@@ -1503,7 +1505,7 @@ LMNA_FIXTURE_DIR='D:\agent-workspace\deliveries\task-L0\fixtures' \
 |---|---|---|---|---|
 | 1 | 部署报告说 TP53 黄档“因为 gene_annotations.tsv 未配置” | 【实测】qc.reasons 两条；代码 306-312 只加 reason | 误导排障/验收 | 改为“黄档由 n_sig/LOHO 决定；缺注释只影响第一层显示” |
 | 2 | `verify_drug_median.py` 只读未版本化缓存名 | 【代码】42-43 | v2 直接跑会找不到文件 | 传 `--cache-dir ~/lmna_v2_verify` 软链接；后续改成按 ALGO_VERSION 查找 |
-| 3 | L5 前端未提交 | 【实测】`fix/L5-frontend`=8d367b6 | 前端无 qc/FDR/适用性/红档；API_BASE 硬编码 | 单独前端任务；先做同源/环境变量 |
+| 3 | 导出 / FDA 按钮未移植 | 【代码】l5 版无 export/Figure3，v1 有 | 新前端缺这两类入口 | 属单独的 v1→l5 移植任务；L5 本波已明确不做 |
 | 4 | 共享 `~/cmap/cmap_data` 未修列/行序 | 【实测】md5/首行 | 老 cmap 和 v1 L5 路径仍读错 | 协调停服后执行 `--in-place --fix-rows`，并重建 cmap 索引 |
 | 5 | `deliveries/task-L7.md` / `docs/design/L7e-l3-provider.md` 称“服务器只有 Level5” | 【实测】`/data2/wanggang/camp/level3|4` 存在且 v1 在用 | 设计文档的数据前提过时，可能重复下载数十 GB | 更新 L7e 的数据可用性描述 |
 | 6 | v1 CORS `*` + credentials | 【代码】v1 main.py CORS | 浏览器安全策略/安全风险 | v1 只在内网；新代码已改白名单 |
