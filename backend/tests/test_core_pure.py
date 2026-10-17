@@ -72,18 +72,18 @@ def test_abstract_interface_includes_all_shrna_samples():
 
 def test_ks_uniform_batch_extremes():
     # ranks: 1 = 表达最高，978 = 表达最低
+    # 统一符号约定：KS > 0 = 敲低后上调（rank 1），KS < 0 = 下调（rank 978）
     n = 50
     all_top = np.ones((1, n), dtype=np.int16)       # 全部排第 1
     all_bottom = np.full((1, n), 978, dtype=np.int16)  # 全部排第 978
     top_score = ks_uniform_batch(all_top, G=978)[0]
     bottom_score = ks_uniform_batch(all_bottom, G=978)[0]
-    assert top_score < -0.9
-    assert bottom_score > 0.9
+    assert top_score > 0.9
+    assert bottom_score < -0.9
 
 
 def test_benjamini_hochberg_output_shape_and_range():
-    # 只验证输出结构与取值范围；现有 BH 实现的单调性/正确性问题
-    # 属于 L1 统计修复范围（见交付说明“发现但未处理”）。
+    # L1 已把 BH 修正为 scipy 等价实现，这里保留结构与取值范围检查。
     p = np.array([0.01, 0.04, 0.03, 0.5])
     q = SignatureEngine._benjamini_hochberg(p)
     assert q.shape == p.shape

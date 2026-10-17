@@ -82,8 +82,9 @@ class L5Provider(IDataProvider):
         )
 
         # 5. 缓存常用查询
+        # 只保留真正的 shRNA 敲低实例，排除 trt_sh.cgs 共识签名等派生类型
         self._shrna_df = self._sig_info[
-            self._sig_info['pert_type'].str.startswith('trt_sh', na=False)
+            self._sig_info['pert_type'] == 'trt_sh'
         ].copy()
 
         self._drug_df = self._sig_info[
@@ -116,7 +117,7 @@ class L5Provider(IDataProvider):
         """
         indices = [self._sig_id_to_idx[sid] for sid in sig_ids]
         n = len(indices)
-        result = np.empty((978, n), dtype=np.float32)
+        result = np.empty((len(self._lm_gene_symbols), n), dtype=np.float32)
 
         for start in range(0, n, chunk_size):
             end = min(start + chunk_size, n)

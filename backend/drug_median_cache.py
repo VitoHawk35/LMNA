@@ -66,7 +66,7 @@ def _ensure_drug_median_cache(provider: IDataProvider) -> tuple:
 
         # 按药物分组取中位数
         offset = 0
-        batch_medians = np.zeros((978, len(batch_names)), dtype=np.float32)
+        batch_medians = np.zeros((matrix.shape[0], len(batch_names)), dtype=np.float32)
         for i, count in enumerate(batch_counts):
             sub = matrix[:, offset:offset+count]
             batch_medians[:, i] = np.median(sub, axis=1)
