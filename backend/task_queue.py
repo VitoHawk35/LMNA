@@ -75,10 +75,16 @@ def _compute_task_worker(
             "signature": {
                 "gene_name": sig_data["gene_name"],
                 "n_samples": sig_data["n_samples"],
+                "n_sig": sig_data.get(
+                    "n_sig",
+                    len(sig_data["up_genes"]) + len(sig_data["down_genes"]),
+                ),
                 "n_up_genes": len(sig_data["up_genes"]),
                 "n_down_genes": len(sig_data["down_genes"]),
                 "up_genes": sig_data["up_genes"],
                 "down_genes": sig_data["down_genes"],
+                "fast_mode": sig_data.get("fast_mode", False),
+                "params": sig_data.get("params", {}),
             },
             "drug_results": {
                 "method": drug_data["method"],

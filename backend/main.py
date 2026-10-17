@@ -15,6 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, List
 
+import config
 from config import (
     API_HOST, API_PORT, DEFAULT_TOP_K, DEFAULT_BOTTOM_K, DATA_PROVIDER
 )
@@ -82,7 +83,7 @@ def gene_status(gene_name: str):
     """检查某基因的 shRNA 数据可用性"""
     df = _provider.get_shrna_samples(gene_name)
     n = len(df)
-    available = n >= 3
+    available = n >= config.MIN_SH_SAMPLES
     return {
         "gene_name": gene_name.upper(),
         "available": available,
@@ -97,10 +98,19 @@ def compute_gene(gene_name: str, req: ComputeRequest):
     """提交某基因的 signature 计算任务"""
     # 先检查可用性
     df = _provider.get_shrna_samples(gene_name)
-    if len(df) == 0:
+    n_samples = len(df)
+    if n_samples == 0:
         raise HTTPException(
             status_code=404,
             detail=f"基因 {gene_name} 没有 shRNA 敲低数据"
+        )
+    if n_samples < config.MIN_SH_SAMPLES:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                f"基因 {gene_name} 的 shRNA 样本数不足："
+                f"当前 {n_samples} 个，至少需要 {config.MIN_SH_SAMPLES} 个"
+            )
         )
 
     method = req.method.lower()
@@ -143,11 +153,14 @@ def get_signature(gene_name: str):
     return {
         "gene_name": sig["gene_name"],
         "n_samples": sig["n_samples"],
+        "n_sig": sig.get("n_sig", len(sig["up_genes"]) + len(sig["down_genes"])),
         "n_up_genes": len(sig["up_genes"]),
         "n_down_genes": len(sig["down_genes"]),
         "up_genes": sig["up_genes"],
         "down_genes": sig["down_genes"],
         "bootstrap_n": sig.get("bootstrap_n", 0),
+        "fast_mode": sig.get("fast_mode", False),
+        "params": sig.get("params", {}),
     }
 
 

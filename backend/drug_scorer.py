@@ -52,12 +52,13 @@ class DrugScorer:
         up_indices = [symbol_to_idx[g] for g in up_genes if g in symbol_to_idx]
         down_indices = [symbol_to_idx[g] for g in down_genes if g in symbol_to_idx]
 
-        # 直接对中位数矩阵打分
+        # 统一符号约定：mimic = Σz(up) − Σz(down)，score = −mimic
+        # 即 score = −Σz_up + Σz_down，高分 = 逆转
         score_vec = np.zeros(self._drug_matrix.shape[1])
         if up_indices:
-            score_vec += np.sum(self._drug_matrix[up_indices, :], axis=0)
+            score_vec -= np.sum(self._drug_matrix[up_indices, :], axis=0)
         if down_indices:
-            score_vec -= np.sum(self._drug_matrix[down_indices, :], axis=0)
+            score_vec += np.sum(self._drug_matrix[down_indices, :], axis=0)
 
         df = pd.DataFrame({
             "drug_name": self._drug_names,
@@ -94,7 +95,7 @@ class DrugScorer:
         up_indices = [symbol_to_idx[g] for g in up_genes if g in symbol_to_idx]
         down_indices = [symbol_to_idx[g] for g in down_genes if g in symbol_to_idx]
 
-        G = 978
+        G = self._drug_matrix.shape[0]
         # 对中位数矩阵每列计算排名
         ranks = np.argsort(np.argsort(-self._drug_matrix, axis=0), axis=0) + 1
         weights = (G + 1) - 2 * ranks

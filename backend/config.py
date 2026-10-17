@@ -41,15 +41,19 @@ for d in [SIGNATURE_CACHE_DIR, DRUG_SCORE_CACHE_DIR, TASK_CACHE_DIR]:
     os.makedirs(d, exist_ok=True)
 
 # ============ 签名计算参数 ============
-MIN_SH_SAMPLES = 3          # 最少 shRNA 样本数
+# 最少 shRNA 样本数（D3：门槛是否过硬待用户确认，先用环境变量做成可配置）
+MIN_SH_SAMPLES = int(os.getenv("MIN_SH_SAMPLES", "3"))
 KS_THRESHOLD = float(os.getenv("KS_THRESHOLD", "0.2"))          # KS score 阈值（绝对值）
-FDR_THRESHOLD = float(os.getenv("FDR_THRESHOLD", "0.05"))       # BH 校正后 P 值阈值（L5 建议 0.05，L3 建议 0.001）
+FDR_THRESHOLD = float(os.getenv("FDR_THRESHOLD", "0.05"))       # BH 校正后 P 值阈值（默认 0.05；论文模式 0.001 需同时设 BOOTSTRAP_N >= 100000）
 BOOTSTRAP_N = int(os.getenv("BOOTSTRAP_N", "1000"))             # Bootstrap 次数（本地测试默认 1000，服务器 L3 建议 100000）
 RANDOM_SEED = 42            # 随机种子
 
+# 每个方向最多保留的签名基因数（按 |KS| 排序）；0 表示不封顶。
+MAX_GENES_PER_DIRECTION = int(os.getenv("MAX_GENES_PER_DIRECTION", "50"))
+
 # 快速模式：绕过统计显著性，直接取 |KS| 最大的 N 个基因作为 signature（仅用于前后端联调）
-# 设置为 0 表示关闭（本地测试默认开启 100，服务器 L3 建议关闭）
-FAST_MODE_TOP_N = int(os.getenv("FAST_MODE_TOP_N", "100"))
+# 设置为 0 表示关闭（生产默认关闭）
+FAST_MODE_TOP_N = int(os.getenv("FAST_MODE_TOP_N", "0"))
 
 # ============ 药物筛选参数 ============
 DEFAULT_TOP_K = 50
@@ -62,3 +66,16 @@ API_PORT = int(os.getenv("API_PORT", "8001"))
 # ============ 数据提供者选择 ============
 # "l5" 或 "l3"
 DATA_PROVIDER = os.getenv("DATA_PROVIDER", "l5")
+
+
+def signature_params() -> dict:
+    """当前签名计算所用的可复现参数（L2 会在此基础上加入 ALGO_VERSION）。"""
+    return {
+        "DATA_PROVIDER": DATA_PROVIDER,
+        "KS_THRESHOLD": KS_THRESHOLD,
+        "FDR_THRESHOLD": FDR_THRESHOLD,
+        "BOOTSTRAP_N": BOOTSTRAP_N,
+        "RANDOM_SEED": RANDOM_SEED,
+        "FAST_MODE_TOP_N": FAST_MODE_TOP_N,
+        "MAX_GENES_PER_DIRECTION": MAX_GENES_PER_DIRECTION,
+    }
