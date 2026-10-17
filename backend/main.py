@@ -5,12 +5,13 @@ LMNA 基因特征系统 FastAPI 入口
 """
 
 import os
+import secrets
 import sys
 
 # 将 backend 目录加入路径
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, List
@@ -29,19 +30,42 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+def cors_origins() -> List[str]:
+    """读取 LMNA_CORS_ORIGINS（逗号分隔）；为空表示同源部署，不启用 CORS。"""
+    raw = os.getenv("LMNA_CORS_ORIGINS", config.LMNA_CORS_ORIGINS or "")
+    return [item.strip() for item in raw.split(",") if item.strip()]
+
+
+def configure_cors(target_app: FastAPI) -> List[str]:
+    """按环境变量配置 CORS；返回实际生效的来源列表。
+
+    D2：同源部署（nginx 反代 /api）时允许为空，此时不添加中间件，
+    避免 allow_origins=["*"] + allow_credentials=True 的不合规组合。
+    """
+    origins = cors_origins()
+    if origins:
+        target_app.add_middleware(
+            CORSMiddleware,
+            allow_origins=origins,
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
+    return origins
+
+
+configure_cors(app)
 
 # 全局单例
 _provider = create_provider()
 _cache = CacheManager()
 _queue = TaskQueue()
+
+
+@app.on_event("startup")
+def _mark_stale_tasks_on_startup():
+    """启动时清理上次进程残留的 pending/running 任务。"""
+    _queue.mark_stale_tasks_on_startup()
 
 
 # ============ 请求/响应模型 ============
@@ -117,12 +141,15 @@ def compute_gene(gene_name: str, req: ComputeRequest):
     if method not in ("xsum", "wtcs"):
         raise HTTPException(status_code=400, detail="method 必须是 xsum 或 wtcs")
 
-    task_id = _queue.submit(gene_name, method)
+    task_id, deduplicated = _queue.submit_ex(gene_name, method)
+    task = _queue.get_status(task_id) or {}
     return {
         "task_id": task_id,
         "gene_name": gene_name.upper(),
         "method": method,
-        "status": "pending",
+        "status": task.get("status", "pending"),
+        # 新增字段：本次提交是否复用了已有的 pending/running 任务
+        "deduplicated": deduplicated,
     }
 
 
@@ -189,8 +216,24 @@ def get_drugs(
 
 
 @app.delete("/api/cache/{gene_name}")
-def clear_cache(gene_name: str):
-    """清除某基因的缓存"""
+def clear_cache(
+    gene_name: str,
+    x_admin_token: Optional[str] = Header(None, alias="X-Admin-Token"),
+):
+    """清除某基因的缓存（需要 X-Admin-Token 管理令牌）。"""
+    expected = os.getenv("LMNA_ADMIN_TOKEN", "") or config.LMNA_ADMIN_TOKEN or ""
+    if not expected:
+        # 未配置令牌时禁用该危险接口，避免默认无保护
+        raise HTTPException(
+            status_code=403,
+            detail="缓存删除接口未启用：管理员未设置 LMNA_ADMIN_TOKEN",
+        )
+    provided = x_admin_token or ""
+    if not provided or not secrets.compare_digest(
+        provided.encode("utf-8"), expected.encode("utf-8")
+    ):
+        raise HTTPException(status_code=403, detail="管理员令牌无效")
+
     deleted = _cache.clear_gene(gene_name)
     return {
         "gene_name": gene_name.upper(),

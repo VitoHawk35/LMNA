@@ -64,8 +64,18 @@ API_HOST = os.getenv("API_HOST", "0.0.0.0")
 API_PORT = int(os.getenv("API_PORT", "8001"))
 
 # ============ 数据提供者选择 ============
-# "l5" 或 "l3"
+# "l5" 或 "l3"（"l3" 尚未实现，设为该值服务会在启动时失败，见 L3Provider）
 DATA_PROVIDER = os.getenv("DATA_PROVIDER", "l5")
+
+# ============ 任务队列 ============
+# running 任务超过该秒数没有心跳更新即视为超时（默认 7200 秒 = 2 小时）
+TASK_TIMEOUT_SEC = int(os.getenv("TASK_TIMEOUT_SEC", "7200"))
+
+# ============ 安全 / CORS ============
+# DELETE /api/cache/{gene} 的管理员令牌；未设置时该接口一律返回 403。
+LMNA_ADMIN_TOKEN = os.getenv("LMNA_ADMIN_TOKEN", "")
+# 允许的跨域来源，逗号分隔；为空表示同源部署，不启用 CORS 中间件（D2）。
+LMNA_CORS_ORIGINS = os.getenv("LMNA_CORS_ORIGINS", "")
 
 
 def signature_params() -> dict:
