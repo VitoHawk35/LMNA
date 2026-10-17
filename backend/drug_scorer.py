@@ -29,20 +29,41 @@ class DrugScorer:
         signature: Dict,
         method: str = "xsum",
         top_k: int = DEFAULT_TOP_K,
-        bottom_k: int = DEFAULT_BOTTOM_K
+        bottom_k: int = DEFAULT_BOTTOM_K,
+        mode: str = "lof",
     ) -> Dict:
         """
         用指定方法对药物进行打分。
+
+        mode:
+            lof（默认）: top = score 降序（逆转药），bottom = score 升序（模拟药）。
+            gof        : top = score 升序（模拟药），bottom = score 降序（逆转药）。
         """
         method = method.lower()
+        mode = (mode or "lof").strip().lower()
+        if mode not in ("lof", "gof"):
+            raise ValueError(f"不支持的 mode: {mode}（可选 lof / gof）")
         if method == "xsum":
-            return self._xsum_score(signature, top_k, bottom_k)
+            return self._xsum_score(signature, top_k, bottom_k, mode)
         elif method == "wtcs":
-            return self._wtcs_score(signature, top_k, bottom_k)
+            return self._wtcs_score(signature, top_k, bottom_k, mode)
         else:
             raise ValueError(f"不支持的打分方法: {method}")
 
-    def _xsum_score(self, signature: Dict, top_k: int, bottom_k: int) -> Dict:
+    @staticmethod
+    def _select_ends(df, top_k: int, bottom_k: int, mode: str):
+        """按 mode 选择 top/bottom 列表（df 已按 score 降序）。"""
+        if mode == "gof":
+            top = df.tail(top_k).iloc[::-1]     # 升序：模拟药
+            bottom = df.head(bottom_k)          # 降序：逆转药
+        else:
+            top = df.head(top_k)                # 降序：逆转药
+            bottom = df.tail(bottom_k).iloc[::-1]  # 升序：模拟药
+        return top, bottom
+
+    def _xsum_score(
+        self, signature: Dict, top_k: int, bottom_k: int, mode: str = "lof"
+    ) -> Dict:
         """XSUM 算法。"""
         up_genes = signature["up_genes"]
         down_genes = signature["down_genes"]
@@ -66,11 +87,11 @@ class DrugScorer:
         })
         df = df.sort_values("score", ascending=False).reset_index(drop=True)
 
-        top = df.head(top_k)
-        bottom = df.tail(bottom_k).iloc[::-1]
+        top, bottom = self._select_ends(df, top_k, bottom_k, mode)
 
         return {
             "method": "xsum",
+            "mode": mode,
             "gene_name": signature["gene_name"],
             "n_up_genes": len(up_genes),
             "n_down_genes": len(down_genes),
@@ -85,7 +106,9 @@ class DrugScorer:
             "all_scores": df.to_dict("records"),
         }
 
-    def _wtcs_score(self, signature: Dict, top_k: int, bottom_k: int) -> Dict:
+    def _wtcs_score(
+        self, signature: Dict, top_k: int, bottom_k: int, mode: str = "lof"
+    ) -> Dict:
         """WTCS 算法。"""
         up_genes = signature["up_genes"]
         down_genes = signature["down_genes"]
@@ -116,11 +139,11 @@ class DrugScorer:
         if max_abs > 0:
             df["score"] = df["score"] / max_abs
 
-        top = df.head(top_k)
-        bottom = df.tail(bottom_k).iloc[::-1]
+        top, bottom = self._select_ends(df, top_k, bottom_k, mode)
 
         return {
             "method": "wtcs",
+            "mode": mode,
             "gene_name": signature["gene_name"],
             "n_up_genes": len(up_genes),
             "n_down_genes": len(down_genes),

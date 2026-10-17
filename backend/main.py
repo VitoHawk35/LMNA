@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional, List, Literal
 
 import config
 from config import (
@@ -72,10 +72,13 @@ def _mark_stale_tasks_on_startup():
 
 class ComputeRequest(BaseModel):
     method: str = "xsum"  # "xsum" or "wtcs"
+    mode: Literal["lof", "gof"] = "lof"  # lof=找逆转药（top 降序）；gof=找模拟药（top 升序）
 
 
 class DrugQueryRequest(BaseModel):
     method: str = "xsum"
+    mode: Literal["lof", "gof"] = "lof"
+    include_red: bool = False
     top_n: int = DEFAULT_TOP_K
     bottom_n: int = DEFAULT_BOTTOM_K
 
@@ -117,6 +120,28 @@ def gene_status(gene_name: str):
     }
 
 
+@app.get("/api/genes/{gene_name}/suitability")
+def gene_suitability(gene_name: str):
+    """
+    基因适用性预检（L3）。
+
+    只做数据前置检查（不计算签名，几秒内返回）；若该基因已有缓存签名，
+    则一并返回签名里的 qc（判档结果）。
+    """
+    from suitability import precheck
+
+    pre = precheck(_provider, gene_name)
+    sig = _cache.get_signature(gene_name)
+    qc = sig.get("qc") if sig else None
+    return {
+        "gene_name": gene_name.upper(),
+        "precheck": pre,
+        "qc": qc,
+        "grade": qc.get("grade") if qc else None,
+        "cached_signature": sig is not None,
+    }
+
+
 @app.post("/api/genes/{gene_name}/compute")
 def compute_gene(gene_name: str, req: ComputeRequest):
     """提交某基因的 signature 计算任务"""
@@ -128,6 +153,22 @@ def compute_gene(gene_name: str, req: ComputeRequest):
             status_code=404,
             detail=f"基因 {gene_name} 没有 shRNA 敲低数据"
         )
+
+    # L3 数据门槛：独立 hairpin < 2 时无法排除 shRNA 脱靶
+    n_hairpins = (
+        int(df["pert_id"].nunique()) if "pert_id" in df.columns else n_samples
+    )
+    if n_hairpins < config.SUITABILITY_MIN_HAIRPINS:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                f"基因 {gene_name} 的独立 shRNA hairpin 数不足："
+                f"当前 {n_hairpins} 个，至少需要 "
+                f"{config.SUITABILITY_MIN_HAIRPINS} 个；"
+                "少于 2 个无法排除 shRNA 脱靶"
+            )
+        )
+
     if n_samples < config.MIN_SH_SAMPLES:
         raise HTTPException(
             status_code=422,
@@ -141,14 +182,17 @@ def compute_gene(gene_name: str, req: ComputeRequest):
     if method not in ("xsum", "wtcs"):
         raise HTTPException(status_code=400, detail="method 必须是 xsum 或 wtcs")
 
-    task_id, deduplicated = _queue.submit_ex(gene_name, method)
+    task_id, deduplicated = _queue.submit_ex(
+        gene_name, method, score_mode=req.mode
+    )
     task = _queue.get_status(task_id) or {}
     return {
         "task_id": task_id,
         "gene_name": gene_name.upper(),
         "method": method,
+        "mode": req.mode,
         "status": task.get("status", "pending"),
-        # 新增字段：本次提交是否复用了已有的 pending/running 任务
+        # L6 字段：本次提交是否复用了已有的 pending/running 任务
         "deduplicated": deduplicated,
     }
 
@@ -188,6 +232,10 @@ def get_signature(gene_name: str):
         "bootstrap_n": sig.get("bootstrap_n", 0),
         "fast_mode": sig.get("fast_mode", False),
         "params": sig.get("params", {}),
+        # L3 适用性判档（旧缓存没有 qc 时返回 None）
+        "qc": sig.get("qc"),
+        "n_hairpins": sig.get("n_hairpins"),
+        "n_cells": sig.get("n_cells"),
     }
 
 
@@ -195,23 +243,36 @@ def get_signature(gene_name: str):
 def get_drugs(
     gene_name: str,
     method: str = "xsum",
+    mode: Literal["lof", "gof"] = "lof",
+    include_red: bool = False,
     top_n: int = DEFAULT_TOP_K,
     bottom_n: int = DEFAULT_BOTTOM_K
 ):
-    """获取某基因的筛药结果"""
-    drug_data = _cache.get_drug_scores(gene_name, method)
+    """获取某基因的筛药结果（L3：红档默认屏蔽药物列表）。"""
+    drug_data = _cache.get_drug_scores(gene_name, method, mode=mode)
     if drug_data is None:
         raise HTTPException(
             status_code=404,
-            detail=f"基因 {gene_name} 的 {method} 筛药结果尚未计算"
+            detail=f"基因 {gene_name} 的 {method}（{mode}）筛药结果尚未计算"
         )
+
+    sig = _cache.get_signature(gene_name)
+    qc = sig.get("qc") if sig else None
+    suppress_red = bool(
+        qc and qc.get("grade") == "red" and not include_red
+    )
+
     return {
         "gene_name": drug_data["gene_name"],
         "method": drug_data["method"],
+        "mode": drug_data.get("mode", mode),
         "n_up_genes": drug_data["n_up_genes"],
         "n_down_genes": drug_data["n_down_genes"],
-        "top_drugs": drug_data["top_drugs"][:top_n],
-        "bottom_drugs": drug_data["bottom_drugs"][:bottom_n],
+        "top_drugs": [] if suppress_red else drug_data["top_drugs"][:top_n],
+        "bottom_drugs": [] if suppress_red else drug_data["bottom_drugs"][:bottom_n],
+        "qc": qc,
+        "include_red": include_red,
+        "red_suppressed": suppress_red,
     }
 
 
