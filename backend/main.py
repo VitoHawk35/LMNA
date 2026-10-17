@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-LMNA 基因特征系统 FastAPI 入口
+基因敲低签名与药物筛选系统 FastAPI 入口
 """
 
 import os
@@ -13,6 +13,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Optional, List, Literal
 
@@ -25,7 +26,7 @@ from cache_manager import CacheManager
 from task_queue import TaskQueue
 
 app = FastAPI(
-    title="LMNA Gene Signature & Drug Screening System",
+    title="Gene Knockdown Signature & Drug Screening System",
     description="基于 LINCS L1000 的基因敲低特征定义与药物筛选平台",
     version="1.0.0"
 )
@@ -301,6 +302,17 @@ def clear_cache(
         "deleted": deleted,
         "message": "缓存已清除" if deleted else "该基因无缓存"
     }
+
+
+# ============ 前端同源部署 ============
+# 必须在所有 /api 路由之后 mount；否则 "/" 的 StaticFiles 会先匹配，
+# 遮蔽后面的 API 路由。D2：生产走 nginx 反代时仍用相对路径 /api。
+FRONTEND_DIR = os.path.join(config.PROJECT_ROOT, "frontend")
+app.mount(
+    "/",
+    StaticFiles(directory=FRONTEND_DIR, html=True),
+    name="frontend",
+)
 
 
 # ============ 启动 ============

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-LMNA 基因特征系统配置
+基因敲低签名与药物筛选系统配置
 """
 
 import os

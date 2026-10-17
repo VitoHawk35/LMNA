@@ -3,31 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LMNA 基因特征与药物筛选系统</title>
+    <title>基因敲低签名与药物筛选</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #f8f9fa; }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem 0; margin-bottom: 2rem; }
-        .card { border: none; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
-        .gene-tag { display: inline-block; padding: 2px 8px; margin: 2px; border-radius: 4px; font-size: 0.85rem; }
-        .gene-up { background-color: #ffe0e0; color: #c0392b; }
-        .gene-down { background-color: #e0f0ff; color: #2980b9; }
-        .drug-score { font-weight: bold; font-family: monospace; }
-        .loading-spinner { display: none; }
-        .task-status { font-size: 0.9rem; }
-        .task-status.pending { color: #f39c12; }
-        .task-status.running { color: #3498db; }
-        .task-status.completed { color: #27ae60; }
-        .task-status.failed { color: #e74c3c; }
-        pre { background: #f4f4f4; padding: 10px; border-radius: 4px; max-height: 400px; overflow: auto; }
+        body { background:#ffffff; color:#171717; font-family: Inter, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif; }
+        .header { background:#ffffff; color:#171717; border-bottom:1px solid #dfdfdf; padding:1rem 0; margin-bottom:1.5rem; }
+        .card { border:1px solid #dfdfdf; box-shadow:none; border-radius:12px; }
+        .btn-primary { --bs-btn-bg:#3ecf8e; --bs-btn-border-color:#3ecf8e; --bs-btn-color:#171717;
+                       --bs-btn-hover-bg:#24b47e; --bs-btn-hover-border-color:#24b47e; --bs-btn-hover-color:#171717; border-radius:6px; }
+        .gene-up   { background:#fde6ef; color:#b0004a; }
+        .gene-down { background:#e6edff; color:#0438c4; }
+        .drug-score { font-weight:500; font-variant-numeric: tabular-nums; font-family: ui-monospace, monospace; }
+        .task-status.pending { color:#a16207; } .task-status.running { color:#707070; }
+        .task-status.completed { color:#11845b; } .task-status.failed { color:#e2005a; }
+
+        /* ---- 以下为换肤补充：中性分数色、圆角、字重、适用性卡片 ---- */
+        body { font-variant-numeric: tabular-nums; }
+        .container { max-width: 1100px; }
+        h1, h2, h3, h4, h5, h6, strong, b { font-weight: 500; }
+        .header h1 { font-size: 1.5rem; }
+        .header p { color: #707070; }
+        .card-title { font-weight: 500; }
+        .btn, .form-control, .form-select { border-radius: 6px; font-weight: 500; }
+        .btn-outline-primary, .btn-outline-secondary {
+            --bs-btn-color:#171717; --bs-btn-border-color:#dfdfdf;
+            --bs-btn-hover-bg:#fafafa; --bs-btn-hover-border-color:#171717;
+            --bs-btn-hover-color:#171717;
+        }
+        code { color:#171717; }
+        .form-control:focus, .form-select:focus { border-color: #3ecf8e; box-shadow: none; }
+        .alert { border-radius: 12px; }
+        .progress { height: 1.1rem; border-radius: 6px; }
+        .progress-bar { background: #3ecf8e; color: #171717; font-weight: 500; }
+        .gene-tag { display:inline-block; padding:2px 8px; margin:2px; border-radius:6px; font-size:.85rem; }
+        .text-success, .text-danger, .text-warning, .text-info { color:#171717 !important; }
+        .stat-up { color:#b0004a !important; }
+        .stat-down { color:#0438c4 !important; }
+        .text-neutral { color:#171717 !important; }
+        .muted { color:#707070; }
+        .table > :not(caption) > * > * { border-color:#dfdfdf; }
+        .table thead th { background:#fafafa; font-weight:500; }
+        .fdr-significant, .fdr-significant td { font-weight:500; }
+        .fdr-significant td.drug-score { color:#171717; }
+        .grade-badge { display:inline-block; padding:.25rem .6rem; border-radius:6px; font-weight:500; }
+        .grade-green { background:#e8f8f0; color:#11845b; border:1px solid #3ecf8e; }
+        .grade-yellow { background:#fff8e1; color:#a16207; border:1px solid #e0b34d; }
+        .grade-red { background:#fde6ef; color:#b0004a; border:1px solid #e2005a; }
+        .grade-unknown { background:#fafafa; color:#707070; border:1px solid #dfdfdf; }
+        .fast-mode-banner { background:#fff8e1; border:1px solid #e0b34d; color:#7a4b00; border-radius:12px; padding:.75rem 1rem; font-weight:500; }
+        .red-note { background:#fde6ef; border:1px solid #e2005a; color:#b0004a; border-radius:12px; padding:.75rem 1rem; }
+        .suitability-reasons { margin-bottom:0; padding-left:1.25rem; }
+        .suitability-reasons li { margin-bottom:.25rem; }
+        details > summary { color:#707070; cursor:pointer; }
     </style>
 </head>
 <body>
 
 <div class="header">
     <div class="container">
-        <h1>基因特征定义与药物筛选系统</h1>
-        <p class="mb-0">基于 LINCS L1000 数据库，计算基因敲低签名并筛选逆转药物</p>
+        <h1>基因敲低签名与药物筛选</h1>
+        <p class="mb-0">基于 LINCS L1000 数据库，计算基因敲低签名并筛选逆转 / 模拟药物</p>
     </div>
 </div>
 
@@ -37,8 +72,16 @@
         <div class="card-body">
             <h5 class="card-title">输入基因名</h5>
             <div class="row g-3">
-                <div class="col-md-4">
-                    <input type="text" id="geneInput" class="form-control" placeholder="例如: LMNA, TP53, MYC" value="LMNA">
+                <div class="col-md-6">
+                    <input type="text" id="geneInput" class="form-control" placeholder="例如: LMNA, TP53, MYC"
+                           oninput="resetSubmitState()" onchange="checkGene()">
+                </div>
+                <div class="col-md-3">
+                    <select id="modeSelect" class="form-select" onchange="onModeChange()">
+                        <option value="lof" selected>功能丧失（lof）</option>
+                        <option value="gof">功能获得（gof）</option>
+                        <option value="uncertain">不确定（按 lof 计算）</option>
+                    </select>
                 </div>
                 <div class="col-md-3">
                     <select id="methodSelect" class="form-select">
@@ -46,17 +89,28 @@
                         <option value="wtcs">WTCS（连接图方法）</option>
                     </select>
                 </div>
+            </div>
+            <div class="row g-3 mt-1">
                 <div class="col-md-3">
                     <button id="submitBtn" class="btn btn-primary w-100" onclick="submitTask()">
                         <span class="spinner-border spinner-border-sm loading-spinner" id="btnSpinner"></span>
-                        开始计算
+                        <span id="submitLabel">开始分析</span>
                     </button>
                 </div>
                 <div class="col-md-2">
                     <button class="btn btn-outline-secondary w-100" onclick="checkGene()">检查数据</button>
                 </div>
             </div>
+            <div id="modeNotice" class="mt-3 muted" style="display:none;"></div>
             <div id="geneStatus" class="mt-3"></div>
+        </div>
+    </div>
+
+    <!-- 适用性卡片（输入基因后先显示） -->
+    <div class="card mb-4" id="suitabilityCard" style="display:none;">
+        <div class="card-body">
+            <h5 class="card-title">基因适用性</h5>
+            <div id="suitabilityBody"></div>
         </div>
     </div>
 
@@ -66,15 +120,22 @@
             <h5 class="card-title">任务状态</h5>
             <p>Task ID: <code id="taskId"></code></p>
             <p class="task-status" id="taskStatus">等待中...</p>
-            <div class="progress">
+            <div class="progress" role="progressbar" aria-label="任务进度">
                 <div id="taskProgress" class="progress-bar progress-bar-striped progress-bar-animated" style="width: 0%"></div>
             </div>
+            <p id="taskMessage" class="muted mt-2 mb-0">等待任务提交...</p>
             <pre id="taskDetail" class="mt-2"></pre>
         </div>
     </div>
 
     <!-- 结果区 -->
     <div id="results" style="display:none;">
+        <!-- 快速模式警告 -->
+        <div id="fastModeBanner" class="fast-mode-banner mb-4" style="display:none;">
+            警告：本次签名使用了快速模式（未通过显著性检验，直接取 |KS| 最大的基因），
+            结果接近随机，不能用于判药。请改用标准模式重新计算。
+        </div>
+
         <!-- Signature 概览 -->
         <div class="card mb-4">
             <div class="card-body">
@@ -82,25 +143,25 @@
                 <div class="row">
                     <div class="col-md-3">
                         <div class="text-center p-3 bg-light rounded">
-                            <h3 id="sigNSamples" class="text-primary">-</h3>
+                            <h3 id="sigNSamples" class="text-neutral">-</h3>
                             <small>shRNA 样本数</small>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="text-center p-3 bg-light rounded">
-                            <h3 id="sigNUp" class="text-danger">-</h3>
+                            <h3 id="sigNUp" class="stat-up">-</h3>
                             <small>上调基因</small>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="text-center p-3 bg-light rounded">
-                            <h3 id="sigNDown" class="text-info">-</h3>
+                            <h3 id="sigNDown" class="stat-down">-</h3>
                             <small>下调基因</small>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="text-center p-3 bg-light rounded">
-                            <h3 id="sigMethod" class="text-success">-</h3>
+                            <h3 id="sigMethod" class="text-neutral">-</h3>
                             <small>筛药方法</small>
                         </div>
                     </div>
@@ -111,7 +172,7 @@
         <!-- 上调基因 -->
         <div class="card mb-4">
             <div class="card-body">
-                <h5 class="card-title text-danger">上调基因（敲低后表达上升）</h5>
+                <h5 class="card-title stat-up">上调基因（敲低后表达上升）</h5>
                 <div id="upGenesList" class="mt-2"></div>
             </div>
         </div>
@@ -119,7 +180,7 @@
         <!-- 下调基因 -->
         <div class="card mb-4">
             <div class="card-body">
-                <h5 class="card-title text-info">下调基因（敲低后表达下降）</h5>
+                <h5 class="card-title stat-down">下调基因（敲低后表达下降）</h5>
                 <div id="downGenesList" class="mt-2"></div>
             </div>
         </div>
@@ -127,10 +188,13 @@
         <!-- Top 药物 -->
         <div class="card mb-4">
             <div class="card-body">
-                <h5 class="card-title text-success">Top 逆转药物（高分 = 强逆转效果）</h5>
+                <h5 class="card-title" id="topDrugsTitle">逆转药物（lof）</h5>
+                <p class="muted" id="topDrugsHint">分数越高，逆转越强；FDR 越小越可信</p>
                 <div class="table-responsive">
                     <table class="table table-hover">
-                        <thead><tr><th>#</th><th>药物名</th><th>Score</th></tr></thead>
+                        <thead>
+                            <tr><th>#</th><th>药物名</th><th>Score</th><th id="topFdrHeader">FDR（逆转）</th></tr>
+                        </thead>
                         <tbody id="topDrugsTable"></tbody>
                     </table>
                 </div>
@@ -140,14 +204,22 @@
         <!-- Bottom 药物 -->
         <div class="card mb-4">
             <div class="card-body">
-                <h5 class="card-title text-warning">Bottom 药物（低分 = 加重效果）</h5>
+                <h5 class="card-title" id="bottomDrugsTitle">模拟药物（gof 方向）</h5>
+                <p class="muted" id="bottomDrugsHint">分数越低，模拟越强；FDR 越小越可信</p>
                 <div class="table-responsive">
                     <table class="table table-hover">
-                        <thead><tr><th>#</th><th>药物名</th><th>Score</th></tr></thead>
+                        <thead>
+                            <tr><th>#</th><th>药物名</th><th>Score</th><th id="bottomFdrHeader">FDR（模拟）</th></tr>
+                        </thead>
                         <tbody id="bottomDrugsTable"></tbody>
                     </table>
                 </div>
             </div>
+        </div>
+
+        <!-- 红档说明 -->
+        <div id="redSuppressedNotice" class="red-note mb-4" style="display:none;">
+            该基因适用性为红档：本页不提供药物列表，建议改用差异表达上传（cmap）流程。
         </div>
 
         <!-- 导出 -->
@@ -162,30 +234,155 @@
 </div>
 
 <script>
-const API_BASE = 'http://localhost:8001';
+const API_BASE = '';
 let currentResult = null;
+let currentSuitability = null;
+
+/* 所有拼进 innerHTML 的后端字符串都必须经过 esc()。 */
+function esc(value) {
+    return String(value === null || value === undefined ? '' : value).replace(/[&<>"']/g, function (ch) {
+        return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[ch];
+    });
+}
+
+function selectedMode() {
+    return document.getElementById('modeSelect').value;
+}
+
+function scoreMode() {
+    return selectedMode() === 'gof' ? 'gof' : 'lof';
+}
+
+function onModeChange() {
+    const notice = document.getElementById('modeNotice');
+    if (selectedMode() === 'uncertain') {
+        notice.style.display = 'block';
+        notice.textContent = '不确定模式：按功能丧失（lof）计算；适用性档位最多显示为黄档，请谨慎解读。';
+    } else {
+        notice.style.display = 'none';
+    }
+    if (currentSuitability) renderSuitability(currentSuitability);
+}
+
+function setSubmitBlocked(blocked) {
+    const btn = document.getElementById('submitBtn');
+    const label = document.getElementById('submitLabel');
+    btn.disabled = blocked;
+    label.textContent = blocked ? '改用差异表达上传（cmap）' : '开始分析';
+}
+
+function resetSubmitState() {
+    currentSuitability = null;
+    document.getElementById('suitabilityCard').style.display = 'none';
+    document.getElementById('geneStatus').innerHTML = '';
+    setSubmitBlocked(false);
+}
+
+async function fetchSuitability(gene) {
+    const res = await fetch(`${API_BASE}/api/genes/${encodeURIComponent(gene)}/suitability`);
+    if (!res.ok) throw new Error(`适用性检查失败（HTTP ${res.status}）`);
+    return res.json();
+}
 
 async function checkGene() {
     const gene = document.getElementById('geneInput').value.trim().toUpperCase();
     if (!gene) return alert('请输入基因名');
 
     try {
-        const res = await fetch(`${API_BASE}/api/genes/${gene}/status`);
-        const data = await res.json();
-        const el = document.getElementById('geneStatus');
-        if (data.available) {
-            el.innerHTML = `<div class="alert alert-success">
-                <strong>${gene}</strong> 可用！shRNA 样本数: ${data.n_shrna_samples}
-                ${data.cached ? '(签名已缓存)' : ''}
-            </div>`;
-        } else {
-            el.innerHTML = `<div class="alert alert-danger">
-                <strong>${gene}</strong> 无 shRNA 数据
-            </div>`;
-        }
+        const data = await fetchSuitability(gene);
+        currentSuitability = data;
+        renderSuitability(data);
     } catch (e) {
-        alert('检查失败: ' + e.message);
+        document.getElementById('geneStatus').innerHTML =
+            `<div class="alert alert-danger mb-0">检查失败：${esc(e.message)}</div>`;
     }
+}
+
+function effectiveGrade(data) {
+    let grade = data && data.grade;
+    const pre = data && data.precheck;
+    if (!grade && pre && pre.data_gate_ok === false) grade = 'red';
+    if (!grade) grade = 'unknown';
+    if (selectedMode() === 'uncertain' && grade === 'green') grade = 'yellow';
+    return grade;
+}
+
+function gradeMeta(grade) {
+    const table = {
+        green: {icon: '✓', label: '绿档', cls: 'grade-green'},
+        yellow: {icon: '!', label: '黄档', cls: 'grade-yellow'},
+        red: {icon: '✗', label: '红档', cls: 'grade-red'},
+        unknown: {icon: '?', label: '待判档', cls: 'grade-unknown'}
+    };
+    return table[grade] || table.unknown;
+}
+
+function renderSuitability(data) {
+    const card = document.getElementById('suitabilityCard');
+    const body = document.getElementById('suitabilityBody');
+    const pre = data.precheck || {};
+    const qc = data.qc || null;
+    const grade = effectiveGrade(data);
+    const meta = gradeMeta(grade);
+
+    let reasons = [];
+    if (qc && Array.isArray(qc.reasons) && qc.reasons.length) {
+        reasons = qc.reasons.slice();
+    } else if (Array.isArray(pre.reasons)) {
+        reasons = pre.reasons.slice();
+    }
+    if (!qc) {
+        reasons.push('尚未计算签名，暂不能给出稳定性档位；以上为数据前置检查结果。');
+    }
+    if (selectedMode() === 'uncertain') {
+        reasons.push('不确定模式按 lof 计算，适用性档位最多显示为黄档。');
+    }
+
+    const reasonsHtml = reasons.length
+        ? `<ul class="suitability-reasons mt-2">${reasons.map(r => `<li>${esc(r)}</li>`).join('')}</ul>`
+        : '<p class="muted mt-2 mb-0">暂无判档依据。</p>';
+
+    const ref = qc && qc.reference ? qc.reference : null;
+    let refHtml = '';
+    if (ref) {
+        const cellLines = Array.isArray(ref.cell_lines) && ref.cell_lines.length
+            ? ref.cell_lines.map(esc).join('、')
+            : '—';
+        refHtml = `<details class="mt-2">
+            <summary>参考信息（不参与判档）</summary>
+            <div class="small mt-1 muted">
+                细胞系：${cellLines}<br>
+                样本数：${esc(ref.n_samples ?? '—')}；hairpin：${esc(ref.n_hairpins ?? '—')}；细胞系数：${esc(ref.n_cells ?? '—')}<br>
+                靶基因是否为 landmark：${ref.target_is_landmark ? '是' : '否'}；
+                target KS：${esc(ref.target_ks ?? '—')}；target median z：${esc(ref.target_median_z ?? '—')}<br>
+                LOHO k：${esc(ref.loho_k ?? '—')}；参与 hairpin：${esc(ref.loho_hairpins_used ?? '—')}；
+                跳过：${esc(ref.loho_hairpins_skipped ?? '—')}
+            </div>
+        </details>`;
+    }
+
+    const statLine = `数据前置检查：${esc(pre.n_samples ?? '—')} 个样本 / ${esc(pre.n_hairpins ?? '—')} 个 hairpin / ${esc(pre.n_cells ?? '—')} 个细胞系`;
+
+    let redHtml = '';
+    if (grade === 'red') {
+        redHtml = `<div class="red-note mt-3">
+            红档不提供药物列表。本页仅支持基因签名计算；请改用差异表达上传（cmap）流程。
+        </div>`;
+    }
+
+    body.innerHTML = `
+        <div class="d-flex align-items-center gap-2">
+            <span class="grade-badge ${meta.cls}">${meta.icon} ${meta.label}</span>
+            <span class="muted">${esc(data.gene_name)}${data.cached_signature ? '（已有缓存签名）' : ''}</span>
+        </div>
+        <p class="muted mt-2 mb-0">${statLine}</p>
+        ${reasonsHtml}
+        ${refHtml}
+        ${redHtml}
+    `;
+    card.style.display = 'block';
+    setSubmitBlocked(grade === 'red');
+    document.getElementById('geneStatus').innerHTML = '';
 }
 
 async function submitTask() {
@@ -193,14 +390,26 @@ async function submitTask() {
     const method = document.getElementById('methodSelect').value;
     if (!gene) return alert('请输入基因名');
 
+    // 先做适用性检查；红档直接拦下，不提交计算。
+    try {
+        const suitability = await fetchSuitability(gene);
+        currentSuitability = suitability;
+        renderSuitability(suitability);
+        if (effectiveGrade(suitability) === 'red') {
+            return alert('该基因适用性为红档，不提供药物列表，请改用差异表达上传（cmap）流程。');
+        }
+    } catch (e) {
+        return alert(`适用性检查失败：${e.message}`);
+    }
+
     document.getElementById('btnSpinner').style.display = 'inline-block';
     document.getElementById('submitBtn').disabled = true;
 
     try {
-        const res = await fetch(`${API_BASE}/api/genes/${gene}/compute`, {
+        const res = await fetch(`${API_BASE}/api/genes/${encodeURIComponent(gene)}/compute`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({method})
+            body: JSON.stringify({method, mode: scoreMode()})
         });
         const data = await res.json();
         if (res.ok) {
@@ -208,16 +417,28 @@ async function submitTask() {
             document.getElementById('taskId').textContent = data.task_id;
             document.getElementById('taskStatus').textContent = '等待中...';
             document.getElementById('taskStatus').className = 'task-status pending';
+            document.getElementById('taskMessage').textContent =
+                data.deduplicated ? '复用了相同参数的在途任务，等待执行...' : '任务已提交，等待执行...';
+            document.getElementById('taskDetail').textContent = '';
             document.getElementById('results').style.display = 'none';
+
+            const bar = document.getElementById('taskProgress');
+            bar.style.width = '100%';
+            bar.classList.remove('bg-danger');
+            bar.classList.add('progress-bar-striped', 'progress-bar-animated');
+
             pollTask(data.task_id);
         } else {
-            alert(data.detail || '提交失败');
+            const detail = data && data.detail;
+            alert(typeof detail === 'string' ? detail : JSON.stringify(detail || '提交失败'));
         }
     } catch (e) {
         alert('提交失败: ' + e.message);
     } finally {
         document.getElementById('btnSpinner').style.display = 'none';
-        document.getElementById('submitBtn').disabled = false;
+        if (effectiveGrade(currentSuitability || {} ) !== 'red') {
+            document.getElementById('submitBtn').disabled = false;
+        }
     }
 }
 
@@ -229,21 +450,30 @@ function pollTask(taskId) {
             const statusEl = document.getElementById('taskStatus');
             statusEl.textContent = data.message || data.status;
             statusEl.className = 'task-status ' + data.status;
+            document.getElementById('taskMessage').textContent = data.message || data.status;
+
+            const bar = document.getElementById('taskProgress');
 
             if (data.status === 'running') {
-                document.getElementById('taskProgress').style.width = '60%';
+                // 后端暂无真实进度百分比：显示 message + 不确定进度动画。
+                bar.style.width = '100%';
+                bar.classList.remove('bg-danger');
+                bar.classList.add('progress-bar-striped', 'progress-bar-animated');
             }
 
             if (data.status === 'completed') {
                 clearInterval(interval);
-                document.getElementById('taskProgress').style.width = '100%';
+                bar.style.width = '100%';
+                bar.classList.remove('progress-bar-striped', 'progress-bar-animated', 'bg-danger');
                 document.getElementById('taskDetail').textContent = JSON.stringify(data.result, null, 2);
                 showResults(data.result);
             } else if (data.status === 'failed') {
                 clearInterval(interval);
-                document.getElementById('taskProgress').style.width = '100%';
-                document.getElementById('taskProgress').classList.add('bg-danger');
+                bar.style.width = '100%';
+                bar.classList.remove('progress-bar-striped', 'progress-bar-animated');
+                bar.classList.add('bg-danger');
                 document.getElementById('taskDetail').textContent = data.error || '未知错误';
+                document.getElementById('taskMessage').textContent = data.message || '计算失败';
             }
         } catch (e) {
             console.error(e);
@@ -251,35 +481,89 @@ function pollTask(taskId) {
     }, 3000);
 }
 
+function drugRow(d, index, fdrKey) {
+    const rawFdr = d[fdrKey];
+    const hasFdr = rawFdr !== null && rawFdr !== undefined && rawFdr !== '';
+    const fdrNum = hasFdr ? Number(rawFdr) : null;
+    const significant = fdrNum !== null && !Number.isNaN(fdrNum) && fdrNum < 0.05;
+    const rowClass = significant ? 'fdr-significant' : '';
+    const fdrText = hasFdr ? esc(rawFdr) : '—';
+    return `<tr class="${rowClass}">
+        <td>${index + 1}</td>
+        <td>${esc(d.drug_name)}</td>
+        <td class="drug-score">${esc(d.score)}</td>
+        <td class="drug-score">${fdrText}</td>
+    </tr>`;
+}
+
+function renderDrugTable(tbodyId, records, fdrKey) {
+    const body = document.getElementById(tbodyId);
+    const rows = Array.isArray(records) ? records : [];
+    if (!rows.length) {
+        body.innerHTML = '<tr><td colspan="4" class="muted">暂无列表（红档屏蔽或结果为空）</td></tr>';
+        return;
+    }
+    body.innerHTML = rows.map((d, i) => drugRow(d, i, fdrKey)).join('');
+}
+
 function showResults(result) {
     currentResult = result;
-    const sig = result.signature;
-    const drugs = result.drug_results;
+    const sig = (result && result.signature) || {};
+    const drugs = (result && result.drug_results) || {};
 
-    document.getElementById('sigNSamples').textContent = sig.n_samples;
-    document.getElementById('sigNUp').textContent = sig.n_up_genes;
-    document.getElementById('sigNDown').textContent = sig.n_down_genes;
-    document.getElementById('sigMethod').textContent = drugs.method.toUpperCase();
+    document.getElementById('sigNSamples').textContent = sig.n_samples ?? '—';
+    document.getElementById('sigNUp').textContent = sig.n_up_genes ?? '—';
+    document.getElementById('sigNDown').textContent = sig.n_down_genes ?? '—';
+    document.getElementById('sigMethod').textContent = drugs.method ? String(drugs.method).toUpperCase() : '—';
 
     // 上调基因
     const upEl = document.getElementById('upGenesList');
-    upEl.innerHTML = sig.up_genes.map(g => `<span class="gene-tag gene-up">${g}</span>`).join('');
+    const upGenes = Array.isArray(sig.up_genes) ? sig.up_genes : [];
+    upEl.innerHTML = upGenes.length
+        ? upGenes.map(g => `<span class="gene-tag gene-up">${esc(g)}</span>`).join('')
+        : '<span class="muted">无</span>';
 
     // 下调基因
     const downEl = document.getElementById('downGenesList');
-    downEl.innerHTML = sig.down_genes.map(g => `<span class="gene-tag gene-down">${g}</span>`).join('');
+    const downGenes = Array.isArray(sig.down_genes) ? sig.down_genes : [];
+    downEl.innerHTML = downGenes.length
+        ? downGenes.map(g => `<span class="gene-tag gene-down">${esc(g)}</span>`).join('')
+        : '<span class="muted">无</span>';
 
-    // Top 药物
-    const topBody = document.getElementById('topDrugsTable');
-    topBody.innerHTML = drugs.top_drugs.map((d, i) =>
-        `<tr><td>${i+1}</td><td>${d.drug_name}</td><td class="drug-score text-success">${d.score}</td></tr>`
-    ).join('');
+    // 按结果实际使用的 mode 决定标题、说明与 FDR 列语义。
+    const mode = drugs.mode === 'gof' ? 'gof' : 'lof';
+    const isGof = mode === 'gof';
 
-    // Bottom 药物
-    const bottomBody = document.getElementById('bottomDrugsTable');
-    bottomBody.innerHTML = drugs.bottom_drugs.map((d, i) =>
-        `<tr><td>${i+1}</td><td>${d.drug_name}</td><td class="drug-score text-danger">${d.score}</td></tr>`
-    ).join('');
+    document.getElementById('topDrugsTitle').textContent =
+        isGof ? '模拟药物（gof）' : '逆转药物（lof）';
+    document.getElementById('bottomDrugsTitle').textContent =
+        isGof ? '逆转药物（lof 方向）' : '模拟药物（gof 方向）';
+    document.getElementById('topDrugsHint').textContent =
+        isGof ? '分数越低，模拟越强；FDR 越小越可信' : '分数越高，逆转越强；FDR 越小越可信';
+    document.getElementById('bottomDrugsHint').textContent =
+        isGof ? '分数越高，逆转越强；FDR 越小越可信' : '分数越低，模拟越强；FDR 越小越可信';
+    document.getElementById('topFdrHeader').textContent = isGof ? 'FDR（模拟）' : 'FDR（逆转）';
+    document.getElementById('bottomFdrHeader').textContent = isGof ? 'FDR（逆转）' : 'FDR（模拟）';
+
+    renderDrugTable('topDrugsTable', drugs.top_drugs, isGof ? 'fdr_mimic' : 'fdr_reversal');
+    renderDrugTable('bottomDrugsTable', drugs.bottom_drugs, isGof ? 'fdr_reversal' : 'fdr_mimic');
+
+    document.getElementById('fastModeBanner').style.display =
+        sig.fast_mode === true ? 'block' : 'none';
+    document.getElementById('redSuppressedNotice').style.display =
+        (drugs.red_suppressed === true || (sig.qc && sig.qc.grade === 'red')) ? 'block' : 'none';
+
+    // 计算完成后用签名里的 qc 刷新适用性卡片（若存在）。
+    if (sig.qc) {
+        currentSuitability = {
+            gene_name: sig.gene_name,
+            precheck: (currentSuitability && currentSuitability.precheck) || null,
+            qc: sig.qc,
+            grade: sig.qc.grade,
+            cached_signature: true
+        };
+        renderSuitability(currentSuitability);
+    }
 
     document.getElementById('results').style.display = 'block';
 }
