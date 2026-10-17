@@ -5,6 +5,7 @@
 import os
 import subprocess
 import sys
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -142,10 +143,9 @@ class _FakeProvider(IDataProvider):
 def test_rank_cache_uses_public_interface(tmp_path, monkeypatch):
     import signature_engine as se
 
-    cache_path = tmp_path / "rank.dat"
-    shape_path = tmp_path / "rank_shape.txt"
-    monkeypatch.setattr(se, "_SHRNA_RANK_CACHE", str(cache_path))
-    monkeypatch.setattr(se, "_SHRNA_RANK_SHAPE", str(shape_path))
+    # L2：秩缓存文件名带版本与 shRNA 列数，改为覆盖缓存目录。
+    monkeypatch.setattr(se, "CACHE_DIR", str(tmp_path))
+    cache_path, shape_path = map(Path, se._shrna_rank_cache_paths(20))
 
     provider = _FakeProvider(n_sigs=20)
     ranks = se._ensure_shrna_rank_cache(provider)

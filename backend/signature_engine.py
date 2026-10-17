@@ -15,74 +15,116 @@ import numpy as np
 from typing import Dict, List
 
 from data_provider import IDataProvider
+from cache_manager import exclusive_file_lock, replace_file_with_retry
 from config import (
     KS_THRESHOLD, FDR_THRESHOLD, BOOTSTRAP_N, RANDOM_SEED,
     CACHE_DIR, FAST_MODE_TOP_N, MAX_GENES_PER_DIRECTION,
-    signature_params
+    ALGO_VERSION, signature_params
 )
 from suitability import (
     grade, load_annotation, loho_jaccard_min, precheck
 )
 
 
-# 全局排名缓存文件
-_SHRNA_RANK_CACHE = os.path.join(CACHE_DIR, "_shrna_rank_matrix.dat")
-_SHRNA_RANK_SHAPE = os.path.join(CACHE_DIR, "_shrna_rank_shape.txt")
+# 可选的显式路径覆盖（仅测试/特殊部署使用）；生产默认走下方版本化路径。
+_SHRNA_RANK_CACHE = None
+_SHRNA_RANK_SHAPE = None
+
+
+def _shrna_rank_cache_paths(n_shrna: int) -> tuple:
+    """秩缓存路径：带算法版本与 shRNA 列数，数据/算法变化后自动失效。"""
+    if _SHRNA_RANK_CACHE and _SHRNA_RANK_SHAPE:
+        return _SHRNA_RANK_CACHE, _SHRNA_RANK_SHAPE
+    stem = os.path.join(
+        CACHE_DIR, f"_shrna_rank_matrix.v{ALGO_VERSION}.{n_shrna}"
+    )
+    return stem + ".dat", stem + ".shape.txt"
+
+
+def _rank_cache_is_valid(cache_path: str, shape_path: str, shape: tuple) -> bool:
+    if not (os.path.exists(cache_path) and os.path.exists(shape_path)):
+        return False
+    try:
+        with open(shape_path, 'r', encoding='utf-8') as f:
+            cached_shape = tuple(map(int, f.read().strip().split(',')))
+    except (OSError, ValueError):
+        return False
+    if cached_shape != shape:
+        return False
+    try:
+        # int16：每元素 2 字节，防止读到被截断的文件。
+        return os.path.getsize(cache_path) == shape[0] * shape[1] * 2
+    except OSError:
+        return False
+
+
+def _load_rank_cache(cache_path: str, shape: tuple) -> np.ndarray:
+    return np.memmap(cache_path, dtype='int16', mode='r', shape=shape)
 
 
 def _ensure_shrna_rank_cache(provider: IDataProvider) -> np.ndarray:
     """
     懒加载并缓存所有 shRNA 样本的列内排名矩阵。
-    缓存为 numpy memmap 文件。
+    缓存为 numpy memmap 文件，文件名带 ALGO_VERSION 与 shRNA 列数；
+    构建前对 <缓存文件>.lock 加排他锁，并在拿到锁后双重检查。
     """
     shrna_df = provider.get_all_shrna_samples()
     n_shrna = len(shrna_df)
     n_genes = len(provider.get_gene_symbols())
+    shape = (n_genes, n_shrna)
 
-    if os.path.exists(_SHRNA_RANK_SHAPE):
-        with open(_SHRNA_RANK_SHAPE, 'r', encoding='utf-8') as f:
-            cached_shape = tuple(map(int, f.read().strip().split(',')))
-        if cached_shape == (n_genes, n_shrna):
-            print(f"[SignatureEngine] 从缓存加载 shRNA 排名矩阵: {cached_shape}")
-            return np.memmap(
-                _SHRNA_RANK_CACHE,
-                dtype='int16',
-                mode='r',
-                shape=cached_shape
+    cache_path, shape_path = _shrna_rank_cache_paths(n_shrna)
+
+    if _rank_cache_is_valid(cache_path, shape_path, shape):
+        print(f"[SignatureEngine] 从缓存加载 shRNA 排名矩阵: {shape}")
+        return _load_rank_cache(cache_path, shape)
+
+    with exclusive_file_lock(cache_path + ".lock"):
+        # 双重检查：等待锁期间别的进程可能已经构建完成。
+        if _rank_cache_is_valid(cache_path, shape_path, shape):
+            print(f"[SignatureEngine] 从缓存加载 shRNA 排名矩阵（等待锁后）: {shape}")
+            return _load_rank_cache(cache_path, shape)
+
+        print(f"[SignatureEngine] 首次构建 shRNA 排名矩阵 ({n_shrna} 样本)...")
+        sig_ids = shrna_df['sig_id'].tolist()
+
+        # 分块读取并计算排名，避免一次性加载大矩阵
+        CHUNK = 5000
+        rank_chunks = []
+        for start in range(0, n_shrna, CHUNK):
+            end = min(start + CHUNK, n_shrna)
+            chunk_sigs = sig_ids[start:end]
+            expr_chunk = provider.get_expression_matrix(chunk_sigs)
+            # 列内降序排名：1=最高，978=最低
+            ranks = np.argsort(np.argsort(-expr_chunk, axis=0), axis=0).astype(np.int16) + 1
+            rank_chunks.append(ranks)
+            print(f"[SignatureEngine] 排名计算进度: {end}/{n_shrna}")
+
+        rank_matrix = np.hstack(rank_chunks)
+
+        # 写入临时 memmap，完整落盘后原子替换，避免并发读到半截文件。
+        tmp_cache = f"{cache_path}.tmp.{os.getpid()}"
+        tmp_shape = f"{shape_path}.tmp.{os.getpid()}"
+        try:
+            fp = np.memmap(
+                tmp_cache, dtype='int16', mode='w+', shape=rank_matrix.shape
             )
+            fp[:] = rank_matrix[:]
+            fp.flush()
+            del fp
+            with open(tmp_shape, 'w', encoding='utf-8') as f:
+                f.write(f"{rank_matrix.shape[0]},{rank_matrix.shape[1]}")
+            replace_file_with_retry(tmp_cache, cache_path)
+            replace_file_with_retry(tmp_shape, shape_path)
+        finally:
+            for tmp in (tmp_cache, tmp_shape):
+                if os.path.exists(tmp):
+                    try:
+                        os.remove(tmp)
+                    except OSError:
+                        pass
 
-    print(f"[SignatureEngine] 首次构建 shRNA 排名矩阵 ({n_shrna} 样本)...")
-    sig_ids = shrna_df['sig_id'].tolist()
-
-    # 分块读取并计算排名，避免一次性加载大矩阵
-    CHUNK = 5000
-    rank_chunks = []
-    for start in range(0, n_shrna, CHUNK):
-        end = min(start + CHUNK, n_shrna)
-        chunk_sigs = sig_ids[start:end]
-        expr_chunk = provider.get_expression_matrix(chunk_sigs)
-        # 列内降序排名：1=最高，978=最低
-        ranks = np.argsort(np.argsort(-expr_chunk, axis=0), axis=0).astype(np.int16) + 1
-        rank_chunks.append(ranks)
-        print(f"[SignatureEngine] 排名计算进度: {end}/{n_shrna}")
-
-    rank_matrix = np.hstack(rank_chunks)
-
-    # 写入 memmap 缓存
-    fp = np.memmap(_SHRNA_RANK_CACHE, dtype='int16', mode='w+', shape=rank_matrix.shape)
-    fp[:] = rank_matrix[:]
-    fp.flush()
-    del fp
-
-    with open(_SHRNA_RANK_SHAPE, 'w', encoding='utf-8') as f:
-        f.write(f"{rank_matrix.shape[0]},{rank_matrix.shape[1]}")
-
-    return np.memmap(
-        _SHRNA_RANK_CACHE,
-        dtype='int16',
-        mode='r',
-        shape=rank_matrix.shape
-    )
+    return _load_rank_cache(cache_path, shape)
 
 
 def ks_uniform_batch(ranks_matrix: np.ndarray, G: int) -> np.ndarray:
