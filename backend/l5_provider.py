@@ -17,6 +17,12 @@ from config import (
     N_GENES, N_SIGS
 )
 
+# L8: 旧版 col_sig_ids.csv 是按 sig_id 字典序排序的，而 fast_matrix.npy 的列序是
+# GCTX 的 COL 顺序。两者不一致时按列索引取数会读到错误的签名（且不会报错），
+# 因此这里做一次快速哨兵检查：473647 个 GCTX 列 id 恰好完全升序的概率可忽略。
+# 测试可 monkeypatch 本模块的 CHECK_COL_ORDER = False 来复现旧行为。
+CHECK_COL_ORDER = True
+
 
 class L5Provider(IDataProvider):
     """
@@ -46,8 +52,18 @@ class L5Provider(IDataProvider):
             shape=(N_GENES, N_SIGS)
         )
 
-        # 2. 加载列名（sig_id 顺序）
-        self._col_names = pd.read_csv(COL_NAMES_PATH)['sig_id'].tolist()
+        # 2. 加载列名（必须与 fast_matrix.npy 的列序一致 = GCTX COL 顺序）
+        self._col_names = pd.read_csv(COL_NAMES_PATH)['sig_id'].astype(str).tolist()
+        if len(self._col_names) != N_SIGS:
+            raise ValueError(
+                f"col_sig_ids.csv 行数 {len(self._col_names)} 与预期列数 {N_SIGS} 不符"
+            )
+        if CHECK_COL_ORDER and N_SIGS > 1 and self._col_names == sorted(self._col_names):
+            raise RuntimeError(
+                "col_sig_ids.csv 是按 sig_id 排序的旧文件，与 fast_matrix.npy 的列序"
+                "（GCTX COL 顺序）不一致，按此映射取列会读到错误签名。"
+                "请先运行 scripts/fix_col_names.py 重新生成该文件（见 deliveries/task-L8.md）。"
+            )
         self._sig_id_to_idx = {sid: i for i, sid in enumerate(self._col_names)}
 
         # 3. 加载基因信息，找出 landmark 基因
