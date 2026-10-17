@@ -17,8 +17,7 @@ from config import TASK_CACHE_DIR, DATA_PROVIDER
 from cache_manager import CacheManager
 from signature_engine import SignatureEngine
 from drug_scorer import DrugScorer
-from l5_provider import L5Provider
-from l3_provider import L3Provider
+from provider_factory import create_provider
 
 
 # 全局进程池（延迟初始化）
@@ -35,9 +34,7 @@ def _get_executor() -> ProcessPoolExecutor:
 
 def _build_provider(provider_type: str):
     """在 worker 进程中构建数据提供者"""
-    if provider_type == "l3":
-        return L3Provider()
-    return L5Provider()
+    return create_provider(provider_type)
 
 
 def _compute_task_worker(
@@ -163,15 +160,28 @@ class TaskQueue:
                 "message": "任务已提交，等待执行..."
             }, f, ensure_ascii=False, indent=2)
 
-        # 提交到进程池
-        executor = _get_executor()
-        executor.submit(
-            _compute_task_worker,
-            gene_name,
-            method,
-            task_id,
-            DATA_PROVIDER
-        )
+        # LMNA_TASK_INLINE=1 时同进程同步执行（测试用），否则提交到进程池
+        if os.getenv("LMNA_TASK_INLINE") == "1":
+            try:
+                _compute_task_worker(
+                    gene_name,
+                    method,
+                    task_id,
+                    DATA_PROVIDER
+                )
+            except Exception:
+                # worker 已把失败状态写入任务文件，这里不再向调用方抛异常，
+                # 保持与进程池模式一致的“提交即返回”语义。
+                pass
+        else:
+            executor = _get_executor()
+            executor.submit(
+                _compute_task_worker,
+                gene_name,
+                method,
+                task_id,
+                DATA_PROVIDER
+            )
 
         return task_id
 

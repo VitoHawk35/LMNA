@@ -31,7 +31,7 @@ def _ensure_shrna_rank_cache(provider: IDataProvider) -> np.ndarray:
     懒加载并缓存所有 shRNA 样本的列内排名矩阵。
     缓存为 numpy memmap 文件。
     """
-    shrna_df = provider._shrna_df
+    shrna_df = provider.get_all_shrna_samples()
     n_shrna = len(shrna_df)
 
     if os.path.exists(_SHRNA_RANK_SHAPE):

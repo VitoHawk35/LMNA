@@ -32,6 +32,9 @@ class L3Provider(IDataProvider):
     def get_shrna_samples(self, gene_name: str) -> pd.DataFrame:
         raise NotImplementedError
 
+    def get_all_shrna_samples(self) -> pd.DataFrame:
+        raise NotImplementedError
+
     def get_expression_matrix(self, sig_ids: List[str]) -> np.ndarray:
         raise NotImplementedError
 

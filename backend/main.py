@@ -15,8 +15,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, List
 
-from config import API_HOST, API_PORT, DEFAULT_TOP_K, DEFAULT_BOTTOM_K
-from l5_provider import L5Provider
+from config import (
+    API_HOST, API_PORT, DEFAULT_TOP_K, DEFAULT_BOTTOM_K, DATA_PROVIDER
+)
+from provider_factory import create_provider
 from cache_manager import CacheManager
 from task_queue import TaskQueue
 
@@ -36,7 +38,7 @@ app.add_middleware(
 )
 
 # 全局单例
-_provider = L5Provider()
+_provider = create_provider()
 _cache = CacheManager()
 _queue = TaskQueue()
 
@@ -59,7 +61,7 @@ class DrugQueryRequest(BaseModel):
 def health():
     return {
         "status": "ok",
-        "provider": "l5",
+        "provider": DATA_PROVIDER,
         "available_genes": len(_provider.list_available_genes()),
         "cached_signatures": len(_cache.list_cached_genes()),
     }

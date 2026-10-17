@@ -30,8 +30,8 @@ PERT_INFO_PATH = os.path.join(DATA_DIR, "GSE92742_Broad_LINCS_pert_info.txt.gz")
 N_GENES = 12328
 N_SIGS = 473647
 
-# 缓存目录
-CACHE_DIR = os.path.join(PROJECT_ROOT, "cache")
+# 缓存目录（可用 LMNA_CACHE_DIR 覆盖，测试时指向临时目录）
+CACHE_DIR = os.getenv("LMNA_CACHE_DIR", os.path.join(PROJECT_ROOT, "cache"))
 SIGNATURE_CACHE_DIR = os.path.join(CACHE_DIR, "signatures")
 DRUG_SCORE_CACHE_DIR = os.path.join(CACHE_DIR, "drug_scores")
 TASK_CACHE_DIR = os.path.join(CACHE_DIR, "tasks")

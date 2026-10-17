@@ -1,0 +1,4 @@
+pytest>=7.0
+# Starlette 0.27 的 TestClient 使用 httpx.Client(app=...)，
+# httpx>=0.28 已移除该参数，因此这里限制版本。
+httpx>=0.24,<0.28
