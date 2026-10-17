@@ -28,7 +28,14 @@ def create_provider(kind: str = DATA_PROVIDER) -> IDataProvider:
     if normalized == "l5":
         return L5Provider()
     if normalized == "l3":
-        return L3Provider()
+        # L3Provider 目前仍是空壳（见 l3_provider.py 与 L7e 方案）。
+        # 这里显式失败，避免服务带病启动后在每个任务里才报错。
+        raise NotImplementedError(
+            "DATA_PROVIDER=l3 暂不可用：L3Provider 尚未实现。"
+            " L3 数据源（Level 3 表达矩阵 + 按板 vehicle 重算 robust z-score）"
+            "的实施见 docs/design/L7e-l3-provider.md；"
+            "请把 DATA_PROVIDER 设为 l5（生产）或 fixture（测试）后重启服务。"
+        )
     if normalized == "fixture":
         return FixtureProvider()
     raise ValueError(
