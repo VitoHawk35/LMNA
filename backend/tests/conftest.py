@@ -32,6 +32,8 @@ os.environ["DATA_PROVIDER"] = "fixture"
 os.environ["LMNA_TASK_INLINE"] = "1"
 os.environ["FAST_MODE_TOP_N"] = "0"
 os.environ["BOOTSTRAP_N"] = "200"
+# L4：生产默认 10000；常规测试用 200 控制耗时，验收测试在用例内显式传 M。
+os.environ.setdefault("DRUG_NULL_N", "200")
 
 FIXTURE_DIR_ENV = "LMNA_FIXTURE_DIR"
 
