@@ -59,6 +59,10 @@ FAST_MODE_TOP_N = int(os.getenv("FAST_MODE_TOP_N", "0"))
 DEFAULT_TOP_K = 50
 DEFAULT_BOTTOM_K = 50
 
+# 药物级随机签名 null 的随机签名数（L4）。
+# p 值的分辨率下限为 1/(DRUG_NULL_N+1)；BH-FDR 还受药物数影响，见 deliveries/task-L4.md。
+DRUG_NULL_N = int(os.getenv("DRUG_NULL_N", "10000"))
+
 # ============ API 配置 ============
 API_HOST = os.getenv("API_HOST", "0.0.0.0")
 API_PORT = int(os.getenv("API_PORT", "8001"))
