@@ -41,6 +41,10 @@ for d in [SIGNATURE_CACHE_DIR, DRUG_SCORE_CACHE_DIR, TASK_CACHE_DIR]:
     os.makedirs(d, exist_ok=True)
 
 # ============ 签名计算参数 ============
+# 算法版本号：签名/打分算法每次发生不兼容变化时 +1。
+# 该值参与缓存键（signature_params），旧版本的缓存文件不会被读到。
+ALGO_VERSION = "2"
+
 # 最少 shRNA 样本数（D3：门槛是否过硬待用户确认，先用环境变量做成可配置）
 MIN_SH_SAMPLES = int(os.getenv("MIN_SH_SAMPLES", "3"))
 KS_THRESHOLD = float(os.getenv("KS_THRESHOLD", "0.2"))          # KS score 阈值（绝对值）
@@ -83,8 +87,9 @@ LMNA_CORS_ORIGINS = os.getenv("LMNA_CORS_ORIGINS", "")
 
 
 def signature_params() -> dict:
-    """当前签名计算所用的可复现参数（L2 会在此基础上加入 ALGO_VERSION）。"""
+    """当前签名/药物打分所用的可复现参数，参与缓存键哈希。"""
     return {
+        "ALGO_VERSION": ALGO_VERSION,
         "DATA_PROVIDER": DATA_PROVIDER,
         "KS_THRESHOLD": KS_THRESHOLD,
         "FDR_THRESHOLD": FDR_THRESHOLD,
@@ -92,4 +97,6 @@ def signature_params() -> dict:
         "RANDOM_SEED": RANDOM_SEED,
         "FAST_MODE_TOP_N": FAST_MODE_TOP_N,
         "MAX_GENES_PER_DIRECTION": MAX_GENES_PER_DIRECTION,
+        # L4 起药物 p 值依赖该参数；放进同一缓存键，避免改 N 后读到旧 p 值。
+        "DRUG_NULL_N": DRUG_NULL_N,
     }

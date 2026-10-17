@@ -17,7 +17,7 @@ from datetime import datetime
 
 import config
 from config import TASK_CACHE_DIR, DATA_PROVIDER, signature_params
-from cache_manager import CacheManager
+from cache_manager import CacheManager, atomic_write_json, read_json_file
 from signature_engine import SignatureEngine
 from drug_scorer import DrugScorer
 from provider_factory import create_provider
@@ -127,11 +127,13 @@ def _compute_task_worker(
 
         # 2. 检查 drug score 缓存
         _update_task_status(task_id, "running", message="开始筛药...")
+        # 药物结果依赖签名模式（快速模式签名 vs 统计筛选签名），写进缓存文件名。
+        mode = "fast" if sig_data.get("fast_mode") else "normal"
         drug_data = cache.get_drug_scores(gene_name, method)
         if drug_data is None:
             scorer = DrugScorer(provider)
             drug_data = scorer.score_drugs(sig_data, method=method)
-            cache.save_drug_scores(gene_name, method, drug_data)
+            cache.save_drug_scores(gene_name, method, drug_data, mode=mode)
         _update_task_status(task_id, "running", message="筛药完成，正在组装结果...")
 
         # 3. 组装结果
@@ -182,10 +184,7 @@ def _update_task_status(
 ):
     """更新任务状态文件"""
     path = os.path.join(TASK_CACHE_DIR, f"{task_id}.json")
-    data = {}
-    if os.path.exists(path):
-        with open(path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
+    data = read_json_file(path) or {}
 
     data["status"] = status
     data["updated_at"] = datetime.now().isoformat()
@@ -196,8 +195,7 @@ def _update_task_status(
     if error is not None:
         data["error"] = error
 
-    with open(path, 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+    atomic_write_json(path, data)
 
 
 class TaskQueue:
@@ -225,10 +223,8 @@ class TaskQueue:
             if not name.endswith(".json"):
                 continue
             path = os.path.join(TASK_CACHE_DIR, name)
-            try:
-                with open(path, 'r', encoding='utf-8') as f:
-                    data = json.load(f)
-            except (OSError, ValueError):
+            data = read_json_file(path)
+            if data is None:
                 continue
             if data.get("status") not in _ACTIVE_STATUSES:
                 continue
@@ -275,20 +271,19 @@ class TaskQueue:
             task_id = str(uuid.uuid4())[:16]
             task_path = os.path.join(TASK_CACHE_DIR, f"{task_id}.json")
 
-            # 写入初始状态（dedup_key/mode/params_hash 为新增字段，老任务没有）
-            with open(task_path, 'w', encoding='utf-8') as f:
-                json.dump({
-                    "task_id": task_id,
-                    "gene_name": gene,
-                    "method": method_norm,
-                    "status": "pending",
-                    "created_at": datetime.now().isoformat(),
-                    "updated_at": datetime.now().isoformat(),
-                    "message": "任务已提交，等待执行...",
-                    "mode": mode,
-                    "params_hash": params_hash,
-                    "dedup_key": dedup_key,
-                }, f, ensure_ascii=False, indent=2)
+            # 写入初始状态（原子写入；dedup_key/mode/params_hash 为新增字段，老任务没有）
+            atomic_write_json(task_path, {
+                "task_id": task_id,
+                "gene_name": gene,
+                "method": method_norm,
+                "status": "pending",
+                "created_at": datetime.now().isoformat(),
+                "updated_at": datetime.now().isoformat(),
+                "message": "任务已提交，等待执行...",
+                "mode": mode,
+                "params_hash": params_hash,
+                "dedup_key": dedup_key,
+            })
 
         # LMNA_TASK_INLINE=1 时同进程同步执行（测试用），否则提交到进程池
         if os.getenv("LMNA_TASK_INLINE") == "1":
@@ -318,10 +313,9 @@ class TaskQueue:
     def get_status(self, task_id: str) -> Optional[Dict]:
         """查询任务状态；running 且心跳超时的任务会就地标为 failed。"""
         path = os.path.join(TASK_CACHE_DIR, f"{task_id}.json")
-        if not os.path.exists(path):
+        data = read_json_file(path)
+        if data is None:
             return None
-        with open(path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
 
         if data.get("status") == "running" and _is_expired(
             data.get("updated_at"), _timeout_seconds()
@@ -331,8 +325,7 @@ class TaskQueue:
                 error=_TIMEOUT_MESSAGE,
                 message=_TIMEOUT_MESSAGE,
             )
-            with open(path, 'r', encoding='utf-8') as f:
-                data = json.load(f)
+            data = read_json_file(path)
         return data
 
     def mark_stale_tasks_on_startup(self) -> int:
@@ -350,10 +343,8 @@ class TaskQueue:
             if not name.endswith(".json"):
                 continue
             path = os.path.join(TASK_CACHE_DIR, name)
-            try:
-                with open(path, 'r', encoding='utf-8') as f:
-                    data = json.load(f)
-            except (OSError, ValueError):
+            data = read_json_file(path)
+            if data is None:
                 continue
             if data.get("status") not in _ACTIVE_STATUSES:
                 continue
@@ -374,6 +365,7 @@ class TaskQueue:
             reverse=True
         )[:limit]:
             if f.endswith('.json'):
-                with open(os.path.join(TASK_CACHE_DIR, f), 'r', encoding='utf-8') as fp:
-                    tasks.append(json.load(fp))
+                data = read_json_file(os.path.join(TASK_CACHE_DIR, f))
+                if data is not None:
+                    tasks.append(data)
         return tasks
