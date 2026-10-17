@@ -31,8 +31,10 @@ def noop_worker(monkeypatch):
     """把 worker 换成不改变状态的空实现：任务会停在 pending，便于测去重。"""
     calls = []
 
-    def fake_worker(gene_name, method, task_id, provider_type):
-        calls.append((gene_name, method, task_id, provider_type))
+    def fake_worker(
+        gene_name, method, task_id, provider_type, score_mode="lof"
+    ):
+        calls.append((gene_name, method, task_id, provider_type, score_mode))
         return {"ok": True}
 
     monkeypatch.setattr(task_queue, "_compute_task_worker", fake_worker)

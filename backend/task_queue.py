@@ -63,25 +63,35 @@ def _is_expired(updated_at: Optional[str], timeout_sec: int) -> bool:
         return False
 
 
-def _dedup_identity(gene_name: str, method: str) -> Tuple[str, str, str]:
+def _dedup_identity(
+    gene_name: str, method: str, score_mode: str = "lof"
+) -> Tuple[str, str, str]:
     """生成任务去重标识。
 
     Returns:
         (dedup_key, mode, params_hash)
         - gene/method 归一化后参与 key
         - mode 目前由 FAST_MODE_TOP_N 推导（fast/full）
+        - score_mode 为 L3 的 lof/gof，也参与 key（两者药物结果不同）
         - params_hash 覆盖签名计算参数，参数变化后不再命中旧任务
     """
     gene = (gene_name or "").strip().upper()
     method_norm = (method or "").strip().lower()
+    score_mode = (score_mode or "lof").strip().lower()
     params = signature_params()
     mode = "fast" if int(params.get("FAST_MODE_TOP_N", 0) or 0) > 0 else "full"
-    payload = {"gene": gene, "method": method_norm, "mode": mode, "params": params}
+    payload = {
+        "gene": gene,
+        "method": method_norm,
+        "mode": mode,
+        "score_mode": score_mode,
+        "params": params,
+    }
     params_hash = hashlib.sha256(
         json.dumps(payload, sort_keys=True, ensure_ascii=False).encode("utf-8")
     ).hexdigest()[:16]
     dedup_key = hashlib.sha256(
-        f"{gene}|{method_norm}|{mode}|{params_hash}".encode("utf-8")
+        f"{gene}|{method_norm}|{mode}|{score_mode}|{params_hash}".encode("utf-8")
     ).hexdigest()[:32]
     return dedup_key, mode, params_hash
 
@@ -103,12 +113,17 @@ def _compute_task_worker(
     gene_name: str,
     method: str,
     task_id: str,
-    provider_type: str
+    provider_type: str,
+    score_mode: str = "lof"
 ) -> Dict:
     """
     在子进程中执行的计算任务。
+
+    score_mode 为 L3 的筛药方向（lof/gof），与任务 JSON 里的 mode
+    （L6 的 fast/full 签名模式）不是同一个概念。
     """
     try:
+        score_mode = (score_mode or "lof").strip().lower()
         # 更新状态为 running
         _update_task_status(task_id, "running", message="开始计算签名...")
 
@@ -125,16 +140,22 @@ def _compute_task_worker(
         else:
             _update_task_status(task_id, "running", message="使用缓存签名，开始筛药...")
 
-        # 2. 检查 drug score 缓存
+        # 2. 检查 drug score 缓存（L3：score_mode 进入文件名）
         _update_task_status(task_id, "running", message="开始筛药...")
-        drug_data = cache.get_drug_scores(gene_name, method)
+        drug_data = cache.get_drug_scores(gene_name, method, mode=score_mode)
         if drug_data is None:
             scorer = DrugScorer(provider)
-            drug_data = scorer.score_drugs(sig_data, method=method)
-            cache.save_drug_scores(gene_name, method, drug_data)
+            drug_data = scorer.score_drugs(
+                sig_data, method=method, mode=score_mode
+            )
+            cache.save_drug_scores(
+                gene_name, method, drug_data, mode=score_mode
+            )
         _update_task_status(task_id, "running", message="筛药完成，正在组装结果...")
 
-        # 3. 组装结果
+        # 3. 组装结果（L3：红档默认不给药物列表）
+        qc = sig_data.get("qc")
+        red_suppressed = bool(qc and qc.get("grade") == "red")
         result = {
             "signature": {
                 "gene_name": sig_data["gene_name"],
@@ -149,11 +170,17 @@ def _compute_task_worker(
                 "down_genes": sig_data["down_genes"],
                 "fast_mode": sig_data.get("fast_mode", False),
                 "params": sig_data.get("params", {}),
+                "qc": qc,
+                "n_hairpins": sig_data.get("n_hairpins"),
+                "n_cells": sig_data.get("n_cells"),
             },
             "drug_results": {
                 "method": drug_data["method"],
-                "top_drugs": drug_data["top_drugs"],
-                "bottom_drugs": drug_data["bottom_drugs"],
+                "mode": drug_data.get("mode", score_mode),
+                "top_drugs": [] if red_suppressed else drug_data["top_drugs"],
+                "bottom_drugs": [] if red_suppressed else drug_data["bottom_drugs"],
+                "qc": qc,
+                "red_suppressed": red_suppressed,
             }
         }
 
@@ -247,25 +274,40 @@ class TaskQueue:
             return data.get("task_id") or name[:-5]
         return None
 
-    def submit(self, gene_name: str, method: str = "xsum") -> str:
+    def submit(
+        self, gene_name: str, method: str = "xsum", score_mode: str = "lof"
+    ) -> str:
         """
         提交计算任务。
 
         Returns:
             task_id
         """
-        task_id, _ = self.submit_ex(gene_name, method)
+        task_id, _ = self.submit_ex(
+            gene_name, method, score_mode=score_mode
+        )
         return task_id
 
-    def submit_ex(self, gene_name: str, method: str = "xsum") -> Tuple[str, bool]:
+    def submit_ex(
+        self,
+        gene_name: str,
+        method: str = "xsum",
+        score_mode: str = "lof",
+    ) -> Tuple[str, bool]:
         """提交计算任务，并返回是否命中了已有任务（去重）。
+
+        L3 的 score_mode（lof/gof）进入去重键和药物缓存文件名，
+        与任务 JSON 里的 mode（L6 的 fast/full）不是同一个概念。
 
         Returns:
             (task_id, deduplicated)
         """
         gene = (gene_name or "").strip().upper()
         method_norm = (method or "").strip().lower()
-        dedup_key, mode, params_hash = _dedup_identity(gene, method_norm)
+        score_mode = (score_mode or "lof").strip().lower()
+        dedup_key, mode, params_hash = _dedup_identity(
+            gene, method_norm, score_mode
+        )
 
         with _submit_lock:
             existing = self._find_active_task(dedup_key)
@@ -286,6 +328,7 @@ class TaskQueue:
                     "updated_at": datetime.now().isoformat(),
                     "message": "任务已提交，等待执行...",
                     "mode": mode,
+                    "score_mode": score_mode,
                     "params_hash": params_hash,
                     "dedup_key": dedup_key,
                 }, f, ensure_ascii=False, indent=2)
@@ -297,7 +340,8 @@ class TaskQueue:
                     gene,
                     method_norm,
                     task_id,
-                    DATA_PROVIDER
+                    DATA_PROVIDER,
+                    score_mode=score_mode
                 )
             except Exception:
                 # worker 已把失败状态写入任务文件，这里不再向调用方抛异常，
@@ -310,7 +354,8 @@ class TaskQueue:
                 gene,
                 method_norm,
                 task_id,
-                DATA_PROVIDER
+                DATA_PROVIDER,
+                score_mode
             )
 
         return task_id, False

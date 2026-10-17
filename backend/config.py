@@ -55,6 +55,23 @@ MAX_GENES_PER_DIRECTION = int(os.getenv("MAX_GENES_PER_DIRECTION", "50"))
 # 设置为 0 表示关闭（生产默认关闭）
 FAST_MODE_TOP_N = int(os.getenv("FAST_MODE_TOP_N", "0"))
 
+# ============ 基因适用性判档（L3，规则 4.4 修订版） ============
+# 第一层生物学注释表（D4，🧑‍⚖️ 待用户确认来源与许可）：
+# 列 gene, expressed_in_l1000_cells, tissue_specific, receptor_or_channel。
+# 文件不存在时判档显示“未知”，不影响档位。
+GENE_ANNOTATIONS_PATH = os.getenv(
+    "GENE_ANNOTATIONS_PATH", os.path.join(DATA_DIR, "gene_annotations.tsv")
+)
+
+# 判档阈值（报告 4.4 修订版；做成环境变量便于后续校准）
+SUITABILITY_MIN_HAIRPINS = int(os.getenv("SUITABILITY_MIN_HAIRPINS", "2"))
+SUITABILITY_MIN_SIG = int(os.getenv("SUITABILITY_MIN_SIG", "5"))
+SUITABILITY_YELLOW_MIN_SIG = int(os.getenv("SUITABILITY_YELLOW_MIN_SIG", "20"))
+SUITABILITY_JACCARD_GREEN = float(os.getenv("SUITABILITY_JACCARD_GREEN", "0.5"))
+SUITABILITY_JACCARD_RED = float(os.getenv("SUITABILITY_JACCARD_RED", "0.3"))
+# 去掉一条 hairpin 后至少剩余的样本数；少于该值则跳过该 hairpin
+LOHO_MIN_REMAINING = int(os.getenv("LOHO_MIN_REMAINING", "3"))
+
 # ============ 药物筛选参数 ============
 DEFAULT_TOP_K = 50
 DEFAULT_BOTTOM_K = 50

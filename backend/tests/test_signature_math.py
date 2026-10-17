@@ -417,9 +417,10 @@ def test_task_result_contains_new_fields(monkeypatch):
                 "params": {"BOOTSTRAP_N": 1000},
             }
 
-        def get_drug_scores(self, gene, method):
+        def get_drug_scores(self, gene, method, mode="lof"):
             return {
                 "method": method,
+                "mode": mode,
                 "top_drugs": [],
                 "bottom_drugs": [],
             }

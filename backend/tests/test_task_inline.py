@@ -12,8 +12,8 @@ def test_inline_submit_runs_worker_synchronously(monkeypatch):
     assert os.environ["LMNA_TASK_INLINE"] == "1"
     calls = []
 
-    def fake_worker(gene_name, method, task_id, provider_type):
-        calls.append((gene_name, method, task_id, provider_type))
+    def fake_worker(gene_name, method, task_id, provider_type, score_mode="lof"):
+        calls.append((gene_name, method, task_id, provider_type, score_mode))
         return {"ok": True}
 
     def fail_executor():
@@ -29,5 +29,6 @@ def test_inline_submit_runs_worker_synchronously(monkeypatch):
     assert calls[0][1] == "xsum"
     assert calls[0][2] == task_id
     assert calls[0][3] == os.environ["DATA_PROVIDER"]
+    assert calls[0][4] == "lof"
     # submit 已同步返回，任务状态文件存在
     assert TaskQueue().get_status(task_id) is not None

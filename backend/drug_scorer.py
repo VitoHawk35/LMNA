@@ -57,12 +57,14 @@ class DrugScorer:
         用指定方法对药物进行打分。
 
         mode:
-            "lof"（默认）：关注逆转药，top 为逆转方向；
-            "gof"：关注模拟药，top 为模拟方向。
+            "lof"（默认）：关注逆转药，top 为逆转方向（XSUM 先按 fdr_reversal
+                升序、再按 score 降序）；
+            "gof"：关注模拟药，top 为模拟方向（XSUM 先按 fdr_mimic 升序、
+                再按 score 升序）。
         WTCS 没有 null 统计字段，mode 只影响列表按 score 的排序方向。
         """
         method = method.lower()
-        mode = (mode or "lof").lower()
+        mode = (mode or "lof").strip().lower()
         if mode not in ("lof", "gof"):
             raise ValueError(f"不支持的 mode: {mode}（只能是 lof 或 gof）")
 
@@ -205,6 +207,20 @@ class DrugScorer:
     # XSUM / WTCS
     # ------------------------------------------------------------------
 
+    @staticmethod
+    def _select_ends(df, top_k: int, bottom_k: int, mode: str):
+        """按 mode 选择 top/bottom 列表（df 已按 score 降序）。
+
+        仅用于没有药物级 null/FDR 的 WTCS；XSUM 按 L4 的 FDR 优先排序。
+        """
+        if mode == "gof":
+            top = df.tail(top_k).iloc[::-1]     # 升序：模拟药
+            bottom = df.head(bottom_k)          # 降序：逆转药
+        else:
+            top = df.head(top_k)                # 降序：逆转药
+            bottom = df.tail(bottom_k).iloc[::-1]  # 升序：模拟药
+        return top, bottom
+
     def _xsum_score(
         self, signature: Dict, top_k: int, bottom_k: int, mode: str = "lof"
     ) -> Dict:
@@ -312,12 +328,7 @@ class DrugScorer:
         if max_abs > 0:
             df["score"] = df["score"] / max_abs
 
-        if mode == "lof":
-            top = df.head(top_k)
-            bottom = df.tail(bottom_k).iloc[::-1]
-        else:
-            top = df.tail(top_k).iloc[::-1]
-            bottom = df.head(bottom_k)
+        top, bottom = self._select_ends(df, top_k, bottom_k, mode)
 
         return {
             "method": "wtcs",

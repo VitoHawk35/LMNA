@@ -20,6 +20,9 @@ from config import (
     CACHE_DIR, FAST_MODE_TOP_N, MAX_GENES_PER_DIRECTION,
     signature_params
 )
+from suitability import (
+    grade, load_annotation, loho_jaccard_min, precheck
+)
 
 
 # 全局排名缓存文件
@@ -111,6 +114,11 @@ class SignatureEngine:
         self._shrna_samples = provider.get_all_shrna_samples()
         self._shrna_gene_symbols = self.provider.get_gene_symbols()
         self._n_genes = len(self._shrna_gene_symbols)
+        # landmark 基因 symbol -> 行下标（用于 L3 的敲低效率参考信息）
+        self._symbol_upper_index = {
+            str(sym).strip().upper(): i
+            for i, sym in enumerate(self._shrna_gene_symbols)
+        }
         print(f"[SignatureEngine] 准备就绪，shRNA 池大小={self._shrna_rank_matrix.shape[1]}")
 
     def compute_signature(self, gene_name: str) -> Dict:
@@ -206,12 +214,41 @@ class SignatureEngine:
             up_sig = up_sig[:MAX_GENES_PER_DIRECTION]
             down_sig = down_sig[:MAX_GENES_PER_DIRECTION]
 
-        return {
-            'gene_name': gene_name.upper(),
+        up_genes = [sym for sym, _ in up_sig]
+        down_genes = [sym for sym, _ in down_sig]
+        gene_upper = gene_name.strip().upper()
+
+        # L3：敲低效率参考信息（只在靶基因是 landmark 时有值）。
+        # LINCS Level5 矩阵为 z-score，这里取靶基因在全部 shRNA 样本上的中位 z。
+        target_idx = self._symbol_upper_index.get(gene_upper)
+        target_median_z = None
+        if target_idx is not None and target_expr.shape[1] > 0:
+            target_median_z = float(np.median(target_expr[target_idx, :]))
+
+        # L3：LOHO Jaccard。k = max(10, 封顶后的 up + down 数量)。
+        loho_k = max(10, len(up_genes) + len(down_genes))
+        full_top = np.argsort(-np.abs(observed_ks))[:min(loho_k, G)]
+        hairpin_ids = (
+            target_df['pert_id'].astype(str).tolist()
+            if 'pert_id' in target_df.columns
+            else [str(i) for i in range(n_samples)]
+        )
+        loho, loho_detail = loho_jaccard_min(
+            ranks=target_ranks,
+            hairpin_ids=hairpin_ids,
+            full_top_indices=full_top,
+            G=G,
+            k=loho_k,
+        )
+
+        pre = precheck(self.provider, gene_upper)
+
+        signature = {
+            'gene_name': gene_upper,
             'n_samples': n_samples,
             'n_sig': n_sig,
-            'up_genes': [sym for sym, _ in up_sig],
-            'down_genes': [sym for sym, _ in down_sig],
+            'up_genes': up_genes,
+            'down_genes': down_genes,
             'ks_scores': ks_dict,
             'p_values': p_dict,
             'fdr_values': fdr_dict,
@@ -221,7 +258,22 @@ class SignatureEngine:
             'bootstrap_n': BOOTSTRAP_N,
             'fast_mode': fast_mode_used,
             'params': signature_params(),
+            # L3 新增字段（旧缓存没有这些字段时 API 给默认值）
+            'n_hairpins': pre['n_hairpins'],
+            'n_cells': pre['n_cells'],
+            'loho_jaccard_min': loho,
+            'loho_detail': loho_detail,
+            'target_median_z': target_median_z,
         }
+
+        annotation, annotation_reason = load_annotation(gene_upper)
+        signature['qc'] = grade(
+            signature,
+            pre,
+            annotation=annotation,
+            annotation_reason=annotation_reason,
+        )
+        return signature
 
     def _bootstrap_null_ks(
         self,
