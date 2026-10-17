@@ -43,6 +43,16 @@ def test_health(client):
     assert body["available_genes"] >= 4
 
 
+def test_frontend_served_at_root(client):
+    """L5：前端与 API 同源部署，"/" 返回 index.html 且不遮蔽 /api。"""
+    resp = client.get("/")
+    assert resp.status_code == 200
+    assert "text/html" in resp.headers.get("content-type", "")
+    assert "基因敲低签名与药物筛选" in resp.text
+    # 同一 TestClient 下 API 路由仍然优先
+    assert client.get("/api/health").status_code == 200
+
+
 def test_list_genes(client):
     resp = client.get("/api/genes", params={"query": "CDK"})
     assert resp.status_code == 200
