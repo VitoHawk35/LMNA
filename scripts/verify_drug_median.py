@@ -88,13 +88,20 @@ def _gctx_meta(h5py, path):
 
 
 def _read_gctx_columns(h5py, path, col_positions, gene_positions):
-    """按 GCTX 列位置读取 (n_cols, n_genes)，恢复为传入顺序。"""
+    """按 GCTX 列位置读取 (n_cols, n_genes)，恢复为传入顺序。
+
+    h5py 的花式索引要求索引递增，因此先排序再还原。
+    """
     col_positions = np.asarray(col_positions, dtype=np.int64)
     gene_positions = np.asarray(gene_positions, dtype=np.int64)
+    order = np.argsort(col_positions)
+    sorted_positions = col_positions[order]
     with h5py.File(path, "r") as f:
         dataset = f["0/DATA/0/matrix"]
-        block = dataset[col_positions][:, gene_positions]
-    return np.asarray(block, dtype=np.float32)
+        block = dataset[sorted_positions][:, gene_positions]
+    block = np.asarray(block, dtype=np.float32)
+    restore = np.argsort(order)
+    return block[restore]
 
 
 def _median_from_gctx(h5py, gctx_path, sig_ids, col_pos, gene_positions,
