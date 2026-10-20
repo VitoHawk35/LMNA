@@ -216,6 +216,7 @@ def generate_expected(out_dir):
             "down_genes": sig["down_genes"],
             "target_ks": sig["ks_scores"][gene],
             "n_sig": sig["n_sig"],
+            "target_loho": sig["loho_jaccard_min"],
         }
         log(f"[mini] expected {gene}: n_sig={sig['n_sig']} "
             f"target_ks={sig['ks_scores'][gene]:.4f} "

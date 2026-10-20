@@ -18,6 +18,7 @@
 """
 
 import copy
+import json
 import os
 
 import numpy as np
@@ -405,6 +406,24 @@ def test_health_integrity_field_reflects_state(monkeypatch):
 # 夹具回归：CDK4 结果不变；伪签名判黄档；哨兵自检通过
 # ---------------------------------------------------------------------------
 
+def _cdk4_baseline():
+    """按当前生效夹具读取 CDK4 基准（n_sig / LOHO）。
+
+    D2 后默认夹具是仓库内置 mini（CDK4 n_sig=230），LMNA_FIXTURE_DIR 指向
+    24MB 完整夹具时为 234；两套夹具各自随带 lmna_fixture_expected.json，
+    基准从生效夹具的 expected 读取，缺失键时回落到完整夹具基线。
+    """
+    n_sig, loho = 234, 0.587
+    if FIXTURE_DIR:
+        path = os.path.join(FIXTURE_DIR, "lmna_fixture_expected.json")
+        if os.path.exists(path):
+            with open(path, "r", encoding="utf-8") as f:
+                entry = json.load(f).get("CDK4", {})
+            n_sig = entry.get("n_sig", n_sig)
+            loho = entry.get("target_loho", loho)
+    return n_sig, loho
+
+
 @requires_fixture
 def test_fixture_cdk4_unchanged_and_fake_signature_yellow():
     import signature_engine as se
@@ -421,9 +440,11 @@ def test_fixture_cdk4_unchanged_and_fake_signature_yellow():
     finally:
         (se.BOOTSTRAP_N, se.FAST_MODE_TOP_N, se.MAX_GENES_PER_DIRECTION) = saved
 
-    # 基线：234 / 0.587 / 绿（改动后必须不变）
-    assert sig["n_sig"] == 234
-    assert abs(sig["loho_jaccard_min"] - 0.587) <= 0.05
+    # 基线按当前生效夹具的 expected 读取（完整夹具 234/0.587，mini 230/0.5873），
+    # 判档绿、rule_version、自身 KS 要求与夹具无关
+    expected_n_sig, expected_loho = _cdk4_baseline()
+    assert sig["n_sig"] == expected_n_sig
+    assert abs(sig["loho_jaccard_min"] - expected_loho) <= 0.05
     assert sig["qc"]["grade"] == "green"
     assert sig["qc"]["rule_version"] == "4.5"
     assert sig["ks_scores"]["CDK4"] < -0.3
