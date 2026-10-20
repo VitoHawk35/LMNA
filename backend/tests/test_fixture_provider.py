@@ -44,8 +44,11 @@ def test_gene_symbols_and_matrix_shapes(provider):
     assert len(set(symbols)) == 978
     sh_df = provider.get_all_shrna_samples()
     cp_df = provider.get_drug_samples()
-    assert len(sh_df) > 3000
-    assert len(cp_df) > 3000
+    # D2：行列数与夹具 meta 一致即可（完整夹具 3482/3155，mini 夹具更小）
+    assert len(sh_df) == provider.meta["n_sh"]
+    assert len(cp_df) == provider.meta["n_cp"]
+    assert len(sh_df) > 0
+    assert len(cp_df) > 0
     mat = provider.get_expression_matrix(sh_df["sig_id"].tolist()[:5])
     assert mat.shape == (978, 5)
     assert mat.dtype == np.float32
