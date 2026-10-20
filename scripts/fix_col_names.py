@@ -34,6 +34,9 @@ GCTX ROW 顺序，两者同样错位。默认**只报告、不修改**（任务�
     # 4) 可选：同时把 row_gene_ids.csv 修为 GCTX ROW 顺序（L8 额外发现）
     python scripts/fix_col_names.py --data-dir ~/cmap/cmap_data --in-place --fix-rows
 
+    # 5) D1：数据已修复后写出完整性指纹 integrity.json（服务启动默认比对指纹）
+    python scripts/fix_col_names.py --data-dir ~/cmap/cmap_data --check --write-fingerprint
+
 依赖：h5py（服务器 cmap conda 环境已具备；LMNA 运行时不依赖本脚本）。
 
 红线：本脚本只应在部署窗口由人执行；不要在服务运行期间反复替换数据文件。
@@ -46,6 +49,10 @@ import sys
 import tempfile
 
 import pandas as pd
+
+# D1：复用 backend/lincs_integrity.py 的指纹实现（两处保持一致）
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "backend"))
+import lincs_integrity  # noqa: E402
 
 DEFAULT_DATA_DIR = os.path.expanduser("~/cmap/cmap_data")
 DEFAULT_GCTX_NAME = "GSE92742_Broad_LINCS_Level5_COMPZ.MODZ_n473647x12328.gctx"
@@ -171,6 +178,10 @@ def main():
     parser.add_argument("--fix-rows", action="store_true",
                         help="同时把 row_gene_ids.csv 修为 GCTX ROW 顺序（L8 额外发现，默认关闭）")
     parser.add_argument("--check", action="store_true", help="只检查，不写任何文件")
+    parser.add_argument("--write-fingerprint", action="store_true",
+                        help="D1：花名册与 GCTX 一致后，写出 integrity.json 完整性指纹"
+                             "（行/列 ID 列表 sha256、矩阵形状、3 列抽样数值哈希）；"
+                             "服务启动默认（LINCS_INTEGRITY_MODE=fingerprint）比对该文件")
     parser.add_argument("--verify", type=int, default=3,
                         help="校验的抽样列数（默认 3；0 表示只校验首/中/末）")
     args = parser.parse_args()
@@ -208,25 +219,51 @@ def main():
     if not ok:
         sys.exit("抽样列校验失败：fast_matrix 的列序与 GCTX COL 元数据不一致，请先查清数据来源。")
 
-    if args.check:
+    if args.check and not args.write_fingerprint:
         print("\n[L8] --check：未写任何文件。")
         return
 
-    if args.in_place:
-        backup = _backup(col_path)
-        _atomic_write_csv(col_ids, COL_HEADER, col_path)
-        print(f"\n[L8] 已原地替换 {col_path}" + (f"（备份：{backup}）" if backup else ""))
-    else:
-        _atomic_write_csv(col_ids, COL_HEADER, out_path)
-        print(f"\n[L8] 已写出 {out_path}")
-        print(f"     人工确认后可执行：cp {out_path} {col_path}")
+    if not args.check:
+        if args.in_place:
+            backup = _backup(col_path)
+            _atomic_write_csv(col_ids, COL_HEADER, col_path)
+            print(f"\n[L8] 已原地替换 {col_path}" + (f"（备份：{backup}）" if backup else ""))
+        else:
+            _atomic_write_csv(col_ids, COL_HEADER, out_path)
+            print(f"\n[L8] 已写出 {out_path}")
+            print(f"     人工确认后可执行：cp {out_path} {col_path}")
 
-    if args.fix_rows:
-        backup = _backup(row_path)
-        _atomic_write_csv(row_ids, ROW_HEADER, row_path)
-        print(f"[L8] 已修复行序 {row_path}" + (f"（备份：{backup}）" if backup else ""))
+        if args.fix_rows:
+            backup = _backup(row_path)
+            _atomic_write_csv(row_ids, ROW_HEADER, row_path)
+            print(f"[L8] 已修复行序 {row_path}" + (f"（备份：{backup}）" if backup else ""))
 
-    print("\n[L8] 后续：删除/重建 LMNA 缓存（由人在部署窗口执行，见 deliveries/task-L8.md）")
+        print("\n[L8] 后续：删除/重建 LMNA 缓存（由人在部署窗口执行，见 deliveries/task-L8.md）")
+
+    if args.write_fingerprint:
+        # D1：指纹必须描述"正确的现状"——只有当前花名册与 GCTX 完全一致时才写，
+        # 否则指纹会把错误的花名册合法化。
+        current_cols = _read_csv_ids(col_path, COL_HEADER)
+        current_rows = _read_csv_ids(row_path, ROW_HEADER)
+        if current_cols != col_ids or current_rows != row_ids:
+            sys.exit(
+                "[D1] 拒绝写指纹：当前花名册与 GCTX 顺序不一致。"
+                "请先执行 --in-place --fix-rows 修复，再重新生成本命令。"
+            )
+        fingerprint = lincs_integrity.build_fingerprint(
+            matrix_path=matrix_path,
+            row_csv_path=row_path,
+            col_csv_path=col_path,
+            row_ids=row_ids,
+            col_ids=col_ids,
+        )
+        fp_path = lincs_integrity.write_fingerprint(
+            fingerprint, os.path.join(data_dir, "integrity.json")
+        )
+        print(f"\n[D1] 已写出完整性指纹 {fp_path}")
+        print(f"     行/列数: {fingerprint['row_count']}/{fingerprint['col_count']}，"
+              f"抽样列: {[s['index'] for s in fingerprint['column_samples']]}")
+        print("     服务启动默认（LINCS_INTEGRITY_MODE=fingerprint）将比对该文件。")
 
 
 if __name__ == "__main__":

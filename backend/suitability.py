@@ -3,14 +3,17 @@
 """
 基因适用性判档（task-L3）
 
-规则依据：报告 4.4 修订版（以 LOHO 稳定性为核心，不再使用旧的 13 项打分）。
+规则依据：报告 4.4 修订版（以 LOHO 稳定性为核心，不再使用旧的 13 项打分），
+D1 起追加防线2 规则（RULE_VERSION 4.5）：目标基因是 landmark 但敲低后自身
+KS > 0（自身未下降）时，最高只给黄档。
 
 档位（依次判断）：
     red    : 独立 hairpin（pert_id 去重）< 2；或算不出签名 / n_sig < 5；
              或 fast_mode_used；或注释判定"不表达 / 组织特异受体或通道"；
              或不满足黄/绿档。
     yellow : n_sig >= 20 且 loho_jaccard_min ∈ [0.3, 0.5)；
-             或满足绿档条件但注释提示"组织专有"。
+             或满足绿档条件但注释提示"组织专有"；
+             或满足绿档条件但目标基因自身 KS > 0（D1）。
     green  : n_sig >= 5 且 loho_jaccard_min >= 0.5。
 
 LOHO（leave-one-hairpin-out）Jaccard：
@@ -32,7 +35,7 @@ import pandas as pd
 
 import config
 
-RULE_VERSION = "4.4-rev"
+RULE_VERSION = "4.5"
 
 # 注释表读取缓存：path -> (mtime, DataFrame)
 _ANNOTATION_CACHE: Dict[str, Tuple[float, pd.DataFrame]] = {}
@@ -368,6 +371,16 @@ def grade(
         and jaccard_red <= loho < jaccard_green
     )
 
+    # ---- D1 防线2：目标基因自身 KS（判档前先行计算，供规则与参考信息共用）----
+    ks_scores = signature.get("ks_scores") or {}
+    target_is_landmark = gene in ks_scores
+    target_ks = None
+    if target_is_landmark:
+        try:
+            target_ks = float(ks_scores[gene])
+        except (TypeError, ValueError):
+            target_ks = None
+
     if red_hit:
         grade_value = "red"
         reasons.append(
@@ -399,16 +412,20 @@ def grade(
             f"[{jaccard_red:g}, {jaccard_green:g})）条件"
         )
 
-    # ---- 参考信息：只展示，不参与判档 ----
-    ks_scores = signature.get("ks_scores") or {}
-    target_is_landmark = gene in ks_scores
-    target_ks = None
-    if target_is_landmark:
-        try:
-            target_ks = float(ks_scores[gene])
-        except (TypeError, ValueError):
-            target_ks = None
+    # ---- D1 防线2：landmark 靶基因敲低后自身未下降 → 最高黄档 ----
+    if (
+        grade_value == "green"
+        and target_is_landmark
+        and target_ks is not None
+        and target_ks > 0
+    ):
+        grade_value = "yellow"
+        reasons.append(
+            "敲低后目标基因自身未下降（自身 KS > 0），"
+            "敲低可能未生效或数据有误，最高只给黄档"
+        )
 
+    # ---- 参考信息：只展示，不参与判档 ----
     target_median_z = signature.get("target_median_z")
     if not target_is_landmark:
         target_median_z = None

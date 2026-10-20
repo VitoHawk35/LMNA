@@ -87,6 +87,17 @@ def data_dir(tmp_path, slice_data):
     pd.DataFrame({"sig_id": sorted(slice_data["sig_ids"])}).to_csv(
         d / "col_sig_ids.bad.csv", index=False
     )
+
+    # D1：默认 fingerprint 模式需要 integrity.json；按"good"花名册生成，
+    # bad 花名册会被指纹比对拒绝（这正是防线1 的验收语义）。
+    import lincs_integrity
+
+    fp = lincs_integrity.build_fingerprint(
+        matrix_path=str(d / "fast_matrix.npy"),
+        row_csv_path=str(d / "row_gene_ids.csv"),
+        col_csv_path=str(d / "col_sig_ids.good.csv"),
+    )
+    lincs_integrity.write_fingerprint(fp, str(d / "integrity.json"))
     return d
 
 
@@ -147,6 +158,8 @@ def test_sorted_col_names_are_rejected(monkeypatch, data_dir):
 
 def test_sorted_col_names_read_wrong_columns(monkeypatch, data_dir, slice_data):
     """验收 2b：关闭哨兵后复现旧行为——排序映射确实读到错误的签名。"""
+    # D1：本用例故意复现"花名册错位"的旧行为，需同时关闭防线1（仅供测试）。
+    monkeypatch.setenv("LINCS_INTEGRITY_MODE", "off")
     provider = _make_provider(
         monkeypatch, data_dir, "col_sig_ids.bad.csv", check_order=False
     )

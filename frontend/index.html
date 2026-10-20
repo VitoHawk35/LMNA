@@ -66,6 +66,13 @@
     </div>
 </div>
 
+<!-- D1 防线2：数据自检未通过时的黄色横幅（由 /api/health 的 integrity 字段驱动） -->
+<div id="integrityBanner" class="fast-mode-banner" style="display:none; border-radius:0; margin:0;">
+    <div class="container">
+        数据自检未通过，结果可能不可靠
+    </div>
+</div>
+
 <div class="container">
     <!-- 输入区 -->
     <div class="card mb-4">
@@ -237,6 +244,25 @@
 const API_BASE = '';
 let currentResult = null;
 let currentSuitability = null;
+
+/* D1 防线2：启动后查询生物学自检结论，suspect 时显示黄色横幅。
+   自检在后台线程执行，未完成（unknown/running）时不打搅用户；
+   页面加载后稍等片刻再复查一次，覆盖自检刚结束的情形。 */
+async function refreshIntegrityBanner() {
+    try {
+        const res = await fetch(`${API_BASE}/api/health`);
+        if (!res.ok) return;
+        const body = await res.json();
+        const banner = document.getElementById('integrityBanner');
+        banner.style.display = body.integrity === 'suspect' ? 'block' : 'none';
+    } catch (e) {
+        /* 健康检查失败不阻塞页面使用 */
+    }
+}
+document.addEventListener('DOMContentLoaded', function () {
+    refreshIntegrityBanner();
+    setTimeout(refreshIntegrityBanner, 15000);
+});
 
 /* 所有拼进 innerHTML 的后端字符串都必须经过 esc()。 */
 function esc(value) {
