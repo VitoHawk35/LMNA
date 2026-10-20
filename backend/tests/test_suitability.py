@@ -458,9 +458,11 @@ def test_gof_mode_puts_cdk4_inhibitors_in_top_5_percent(
         sig, method="xsum", mode="gof", top_k=200, bottom_k=200
     )
 
-    # gof：top 列表按 score 升序（模拟药）
-    top_scores = [row["score"] for row in result["top_drugs"]]
-    assert top_scores == sorted(top_scores)
+    # gof：top 列表按 (fdr_mimic, score) 升序（模拟药），契约见
+    # drug_scorer._xsum_score；完整夹具上恰好等同于纯 score 升序，
+    # mini 夹具药物池小、FDR 分档不同，按契约断言两者都成立。
+    top_pairs = [(row["fdr_mimic"], row["score"]) for row in result["top_drugs"]]
+    assert top_pairs == sorted(top_pairs)
 
     scores = {row["drug_name"]: float(row["score"]) for row in result["all_scores"]}
     all_values = np.array(list(scores.values()), dtype=float)

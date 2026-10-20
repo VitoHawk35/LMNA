@@ -56,8 +56,13 @@ class FixtureProvider(IDataProvider):
         npz_path = os.path.join(fixture_dir, "lmna_fixture.npz")
         with np.load(npz_path, allow_pickle=False) as data:
             self._gene_symbols = [str(s) for s in data["gene_symbols"].tolist()]
-            self._sh_matrix = np.asarray(data["sh_matrix"], dtype=np.float32)
-            self._cp_matrix = np.asarray(data["cp_matrix"], dtype=np.float32)
+            # D2：mini 夹具按 int16 milli-z 存储并带 value_scale 乘子；
+            # 完整夹具没有该键，乘子为 1.0（行为不变）。
+            scale = (
+                float(data["value_scale"]) if "value_scale" in data.files else 1.0
+            )
+            self._sh_matrix = np.asarray(data["sh_matrix"], dtype=np.float32) * scale
+            self._cp_matrix = np.asarray(data["cp_matrix"], dtype=np.float32) * scale
 
         self._sh_df = self._read_meta_tsv("lmna_fixture_sh.tsv")
         self._cp_df = self._read_meta_tsv("lmna_fixture_cp.tsv")
