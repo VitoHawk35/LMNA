@@ -24,6 +24,8 @@ from config import (
 from provider_factory import create_provider
 from cache_manager import CacheManager
 from task_queue import TaskQueue
+import integrity_selfcheck
+import lincs_integrity
 
 app = FastAPI(
     title="Gene Knockdown Signature & Drug Screening System",
@@ -69,6 +71,12 @@ def _mark_stale_tasks_on_startup():
     _queue.mark_stale_tasks_on_startup()
 
 
+@app.on_event("startup")
+def _start_integrity_self_check():
+    """D1 防线2：启动后后台执行哨兵基因生物学自检。"""
+    integrity_selfcheck.start_background_self_check(_provider)
+
+
 # ============ 请求/响应模型 ============
 
 class ComputeRequest(BaseModel):
@@ -88,11 +96,21 @@ class DrugQueryRequest(BaseModel):
 
 @app.get("/api/health")
 def health():
+    # get_mode 对非法环境变量取值抛 RuntimeError；健康检查不应因此 500
+    try:
+        integrity_mode = lincs_integrity.get_mode()
+    except RuntimeError:
+        integrity_mode = "invalid"
     return {
         "status": "ok",
         "provider": DATA_PROVIDER,
         "available_genes": len(_provider.list_available_genes()),
         "cached_signatures": len(_cache.list_cached_genes()),
+        # D1：数据完整性。integrity 为防线2 生物学自检结论
+        # （unknown=自检未完成或无可用哨兵；ok=通过；suspect=2/3 以上哨兵未通过），
+        # integrity_mode 为防线1 启动检查模式（gctx/fingerprint/off）。
+        "integrity": integrity_selfcheck.current_integrity_status(),
+        "integrity_mode": integrity_mode,
     }
 
 

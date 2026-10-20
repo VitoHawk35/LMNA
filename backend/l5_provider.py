@@ -16,6 +16,7 @@ from config import (
     SIG_INFO_PATH, GENE_INFO_PATH,
     N_GENES, N_SIGS
 )
+from lincs_integrity import check_startup as _check_lincs_integrity
 
 # L8: 旧版 col_sig_ids.csv 是按 sig_id 字典序排序的，而 fast_matrix.npy 的列序是
 # GCTX 的 COL 顺序。两者不一致时按列索引取数会读到错误的签名（且不会报错），
@@ -58,6 +59,18 @@ class L5Provider(IDataProvider):
             raise ValueError(
                 f"col_sig_ids.csv 行数 {len(self._col_names)} 与预期列数 {N_SIGS} 不符"
             )
+
+        # D1 防线1：启动时完整性检查（行/列花名册逐 ID 或指纹比对）。
+        # 任何不一致抛 RuntimeError 拒绝启动；
+        # 模式由 LINCS_INTEGRITY_MODE=gctx|fingerprint|off 选择（默认 fingerprint）。
+        _check_lincs_integrity(
+            matrix_path=MATRIX_PATH,
+            row_csv_path=ROW_NAMES_PATH,
+            col_csv_path=COL_NAMES_PATH,
+            row_label="row_gene_ids.csv",
+            col_label="col_sig_ids.csv",
+        )
+
         if CHECK_COL_ORDER and N_SIGS > 1 and self._col_names == sorted(self._col_names):
             raise RuntimeError(
                 "col_sig_ids.csv 是按 sig_id 排序的旧文件，与 fast_matrix.npy 的列序"

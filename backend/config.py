@@ -26,9 +26,46 @@ SIG_INFO_PATH = os.path.join(DATA_DIR, "GSE92742_Broad_LINCS_sig_info.txt.gz")
 GENE_INFO_PATH = os.path.join(DATA_DIR, "GSE92742_Broad_LINCS_gene_info.txt.gz")
 PERT_INFO_PATH = os.path.join(DATA_DIR, "GSE92742_Broad_LINCS_pert_info.txt.gz")
 
-# 矩阵维度（L1000  landmark genes × signatures）
-N_GENES = 12328
-N_SIGS = 473647
+# 矩阵维度（L1000 landmark genes × signatures）
+# D1（R11）：不再硬编码。优先读 integrity.json 指纹里的 matrix_shape；
+# 其次由花名册行数推导并用矩阵文件字节数交叉验证；
+# 数据文件不在本机时（如 fixture 测试 / CI）回退到 L1000 名义默认值。
+def _resolve_matrix_dims():
+    import json as _json
+
+    fp_path = os.path.join(DATA_DIR, "integrity.json")
+    if os.path.exists(fp_path):
+        try:
+            with open(fp_path, "r", encoding="utf-8") as f:
+                shape = _json.load(f).get("matrix_shape")
+            if shape and len(shape) == 2 and all(int(x) > 0 for x in shape):
+                return int(shape[0]), int(shape[1])
+        except (OSError, ValueError, TypeError):
+            pass  # 指纹损坏时交给启动完整性检查报错，这里继续回退
+
+    def _count_rows(path):
+        # 去掉末尾空行后，换行符个数 = 数据行数（首行为表头）
+        with open(path, "rb") as f:
+            data = f.read().rstrip(b"\r\n")
+        if not data:
+            return 0
+        return data.count(b"\n")
+
+    if all(os.path.exists(p) for p in (MATRIX_PATH, COL_NAMES_PATH, ROW_NAMES_PATH)):
+        try:
+            n_genes = _count_rows(ROW_NAMES_PATH)
+            n_sigs = _count_rows(COL_NAMES_PATH)
+            if n_genes > 0 and n_sigs > 0:
+                expected = n_genes * n_sigs * 4  # float32 裸 memmap
+                if os.path.getsize(MATRIX_PATH) == expected:
+                    return n_genes, n_sigs
+        except OSError:
+            pass
+
+    return 12328, 473647  # L1000 名义默认（数据不在本机时的回退）
+
+
+N_GENES, N_SIGS = _resolve_matrix_dims()
 
 # 缓存目录（可用 LMNA_CACHE_DIR 覆盖，测试时指向临时目录）
 CACHE_DIR = os.getenv("LMNA_CACHE_DIR", os.path.join(PROJECT_ROOT, "cache"))
