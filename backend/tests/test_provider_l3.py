@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""L6：L3Provider 空壳必须在创建/启动时给出清楚错误。"""
+"""L7e 阶段 2：DATA_PROVIDER=l3 工厂行为（L3Provider 已实施，旧空壳测试作废）。"""
 
 import os
 import subprocess
@@ -9,24 +9,40 @@ from pathlib import Path
 
 import pytest
 
-from l3_provider import L3Provider
+import composite_provider
+from composite_provider import CompositeProvider
 from provider_factory import create_provider
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 
 
-def test_create_provider_l3_raises_clear_error():
-    with pytest.raises(NotImplementedError) as excinfo:
+class _FakeSide:
+    """最小假 provider：只提供 CompositeProvider 启动校验所需的基因表。"""
+
+    def __init__(self, symbols):
+        self._symbols = list(symbols)
+
+    def get_gene_symbols(self):
+        return list(self._symbols)
+
+
+def test_create_provider_l3_returns_composite(monkeypatch):
+    monkeypatch.setattr(composite_provider, "L3Provider",
+                        lambda: _FakeSide(["A", "B", "C"]))
+    monkeypatch.setattr(composite_provider, "L5Provider",
+                        lambda: _FakeSide(["A", "B", "C"]))
+    provider = create_provider("l3")
+    assert isinstance(provider, CompositeProvider)
+
+
+def test_composite_refuses_mismatched_landmark_order(monkeypatch):
+    monkeypatch.setattr(composite_provider, "L3Provider",
+                        lambda: _FakeSide(["A", "B", "C"]))
+    monkeypatch.setattr(composite_provider, "L5Provider",
+                        lambda: _FakeSide(["A", "C", "B"]))
+    with pytest.raises(RuntimeError) as excinfo:
         create_provider("l3")
-    message = str(excinfo.value)
-    assert "L3Provider" in message
-    assert "DATA_PROVIDER=l3" in message
-    assert "L7e" in message
-
-
-def test_l3_provider_shell_still_unimplemented():
-    with pytest.raises(NotImplementedError):
-        L3Provider()
+    assert "landmark" in str(excinfo.value)
 
 
 def test_unknown_provider_message_mentions_options():
@@ -35,11 +51,11 @@ def test_unknown_provider_message_mentions_options():
     assert "l5" in str(excinfo.value)
 
 
-def test_service_fails_at_startup_when_data_provider_l3():
-    """DATA_PROVIDER=l3 时 import main 应立即失败，而不是等到任务执行。"""
+def test_service_fails_at_startup_when_l3_derived_missing():
+    """DATA_PROVIDER=l3 但派生层缺失时 import main 应立即失败。"""
     env = os.environ.copy()
     env["DATA_PROVIDER"] = "l3"
-    # 避免测试环境变量影响：L3 在建 provider 之前就会失败
+    env["L3_DERIVED_DIR"] = str(BACKEND_DIR / "tests" / "data" / "no_such_dir")
     result = subprocess.run(
         [sys.executable, "-c", "import main"],
         cwd=str(BACKEND_DIR),
@@ -51,4 +67,4 @@ def test_service_fails_at_startup_when_data_provider_l3():
     )
     assert result.returncode != 0
     combined = result.stdout + result.stderr
-    assert "L3Provider" in combined or "DATA_PROVIDER=l3" in combined
+    assert "L3" in combined

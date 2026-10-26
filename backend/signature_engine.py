@@ -21,6 +21,7 @@ from config import (
     CACHE_DIR, FAST_MODE_TOP_N, MAX_GENES_PER_DIRECTION,
     ALGO_VERSION, signature_params
 )
+from l3_robust_z import rank_columns_nanaware, RANK_NAN_SENTINEL
 from suitability import (
     grade, load_annotation, loho_jaccard_min, precheck
 )
@@ -95,8 +96,10 @@ def _ensure_shrna_rank_cache(provider: IDataProvider) -> np.ndarray:
             end = min(start + CHUNK, n_shrna)
             chunk_sigs = sig_ids[start:end]
             expr_chunk = provider.get_expression_matrix(chunk_sigs)
-            # 列内降序排名：1=最高，978=最低
-            ranks = np.argsort(np.argsort(-expr_chunk, axis=0), axis=0).astype(np.int16) + 1
+            # 列内降序排名：1=最高，978=最低。
+            # L7e：NaN（L3 MAD=0 基因）不参与排名、配哨兵秩 0；
+            # 无 NaN 的数据（L5/fixture）与旧口径逐元素一致。
+            ranks = rank_columns_nanaware(expr_chunk)
             rank_chunks.append(ranks)
             print(f"[SignatureEngine] 排名计算进度: {end}/{n_shrna}")
 
@@ -161,6 +164,19 @@ class SignatureEngine:
             str(sym).strip().upper(): i
             for i, sym in enumerate(self._shrna_gene_symbols)
         }
+        # L7e：NaN 剔除口径。秩矩阵中哨兵秩 0 = 该样本该基因为 NaN
+        # （L3 MAD=0 板）。某个基因只要在 null 池任一实例中为 NaN，
+        # 其 null 分布即被污染（哨兵秩会造成假性 KS），签名中一律剔除。
+        # 无 NaN 的数据（L5/fixture）此处为 None，行为与旧版完全一致。
+        if bool((self._shrna_rank_matrix == RANK_NAN_SENTINEL).any()):
+            self._pool_nan_invalid = np.asarray(
+                (self._shrna_rank_matrix == RANK_NAN_SENTINEL).any(axis=1)
+            )
+            n_bad = int(self._pool_nan_invalid.sum())
+            print(f"[SignatureEngine] null 池含 NaN 基因 {n_bad} 个，"
+                  f"签名计算时将剔除并计数")
+        else:
+            self._pool_nan_invalid = None
         print(f"[SignatureEngine] 准备就绪，shRNA 池大小={self._shrna_rank_matrix.shape[1]}")
 
     def compute_signature(self, gene_name: str) -> Dict:
@@ -176,12 +192,28 @@ class SignatureEngine:
         target_sig_ids = target_df['sig_id'].tolist()
         target_expr = self.provider.get_expression_matrix(target_sig_ids)
 
-        # 2. 样本内排名
-        target_ranks = np.argsort(np.argsort(-target_expr, axis=0), axis=0).astype(np.int16) + 1
+        # 2. 样本内排名（L7e：NaN 不进秩签名，配哨兵秩 0；
+        #    无 NaN 时与旧口径逐元素一致）
+        target_ranks = rank_columns_nanaware(target_expr)
 
         # 3. 计算观测 KS 分数（G 由数据推导）
         G = self._n_genes
         observed_ks = ks_uniform_batch(target_ranks, G)
+
+        # 3b. L7e NaN 剔除：基因在 null 池任一实例或目标任一样本中为 NaN
+        # （哨兵秩 0）→ 其 KS/p/FDR 不可靠，从签名中剔除（计数入结果）。
+        # 剔除基因的 KS 置 0，保证不进 up/down、不进 LOHO top 集。
+        invalid = (target_ranks == RANK_NAN_SENTINEL).any(axis=1)
+        if self._pool_nan_invalid is not None:
+            invalid = invalid | self._pool_nan_invalid
+        excluded_nan_genes = []
+        if bool(invalid.any()):
+            excluded_nan_genes = sorted(
+                str(self._shrna_gene_symbols[i])
+                for i in np.flatnonzero(invalid)
+            )
+            observed_ks = observed_ks.copy()
+            observed_ks[invalid] = 0.0
 
         # 4. Bootstrap null distribution（剔除目标基因自身的样本列）
         target_mask = (
@@ -206,8 +238,15 @@ class SignatureEngine:
             np.sum(null_ks_abs >= observed_ks_abs, axis=0) + 1
         ) / (B + 1)
 
-        # 6. BH 校正
-        fdr_values = self._benjamini_hochberg(p_values)
+        # 6. BH 校正（L7e：被剔除的 NaN 基因不参与校正——其 p 值由
+        #    哨兵秩算出，混进 BH 会抬高其他基因的校正门槛）
+        if bool(invalid.any()):
+            fdr_values = np.ones(G, dtype=np.float64)
+            valid_idx = np.flatnonzero(~invalid)
+            fdr_values[valid_idx] = self._benjamini_hochberg(
+                p_values[valid_idx])
+        else:
+            fdr_values = self._benjamini_hochberg(p_values)
 
         # 7. 筛选签名基因
         symbols = self._shrna_gene_symbols
@@ -218,6 +257,12 @@ class SignatureEngine:
         fdr_dict = {}
 
         for i, sym in enumerate(symbols):
+            if invalid[i]:
+                # 剔除基因：结果置 null（JSON null），不进 up/down
+                ks_dict[sym] = None
+                p_dict[sym] = None
+                fdr_dict[sym] = None
+                continue
             ks = observed_ks[i]
             p = p_values[i]
             fdr = fdr_values[i]
@@ -261,13 +306,21 @@ class SignatureEngine:
         gene_upper = gene_name.strip().upper()
 
         # L3：敲低效率参考信息（只在靶基因是 landmark 时有值）。
-        # LINCS Level5 矩阵为 z-score，这里取靶基因在全部 shRNA 样本上的中位 z。
+        # 取靶基因在目标样本上的中位 z；L7e：NaN（MAD=0）不参与中位数。
         target_idx = self._symbol_upper_index.get(gene_upper)
         target_median_z = None
         if target_idx is not None and target_expr.shape[1] > 0:
-            target_median_z = float(np.median(target_expr[target_idx, :]))
+            row_vals = target_expr[target_idx, :]
+            if np.isnan(row_vals).any():
+                finite = row_vals[np.isfinite(row_vals)]
+                target_median_z = (
+                    float(np.median(finite)) if finite.size else None
+                )
+            else:
+                target_median_z = float(np.median(row_vals))
 
         # L3：LOHO Jaccard。k = max(10, 封顶后的 up + down 数量)。
+        # L7e：gene_valid_mask 把被剔除的 NaN 基因挡在 top 集之外。
         loho_k = max(10, len(up_genes) + len(down_genes))
         full_top = np.argsort(-np.abs(observed_ks))[:min(loho_k, G)]
         hairpin_ids = (
@@ -281,9 +334,21 @@ class SignatureEngine:
             full_top_indices=full_top,
             G=G,
             k=loho_k,
+            gene_valid_mask=(~invalid) if bool(invalid.any()) else None,
         )
 
         pre = precheck(self.provider, gene_upper)
+
+        # 剔除基因在 all_ks/all_p 中置 null（JSON null），避免哨兵秩
+        # 算出的伪 KS/p 被下游误读。
+        if bool(invalid.any()):
+            all_ks = [None if invalid[i] else float(observed_ks[i])
+                      for i in range(G)]
+            all_p = [None if invalid[i] else float(p_values[i])
+                     for i in range(G)]
+        else:
+            all_ks = observed_ks.tolist()
+            all_p = p_values.tolist()
 
         signature = {
             'gene_name': gene_upper,
@@ -295,8 +360,8 @@ class SignatureEngine:
             'p_values': p_dict,
             'fdr_values': fdr_dict,
             'all_genes': symbols,
-            'all_ks': observed_ks.tolist(),
-            'all_p': p_values.tolist(),
+            'all_ks': all_ks,
+            'all_p': all_p,
             'bootstrap_n': BOOTSTRAP_N,
             'fast_mode': fast_mode_used,
             'params': signature_params(),
@@ -306,6 +371,9 @@ class SignatureEngine:
             'loho_jaccard_min': loho,
             'loho_detail': loho_detail,
             'target_median_z': target_median_z,
+            # L7e：MAD=0 剔除基因（NaN 不进秩签名的口径结果）
+            'excluded_nan_genes': excluded_nan_genes,
+            'n_excluded_nan_genes': len(excluded_nan_genes),
         }
 
         annotation, annotation_reason = load_annotation(gene_upper)
