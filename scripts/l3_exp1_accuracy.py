@@ -80,7 +80,13 @@ NEG_NULL_M = 10000       # 随机签名 null 大小（与生产 DRUG_NULL_N 一�
 
 
 def auroc(scores: np.ndarray, pos_mask: np.ndarray):
-    """Mann-Whitney AUROC（平均秩处理并列）。正例不足返回 None。"""
+    """Mann-Whitney AUROC（平均秩处理并列）。正例不足返回 None。
+
+    方向约定（exp1 口径）：scores 为 mimic 分（mimic = Σz(up) − Σz(down)，
+    高 = 药物模拟敲低）。金标准抑制剂药理上模拟敲低，应落在 mimic 高端
+    （核验锚点 CDK4 AUROC 0.844→0.964 即此方向；reversal 分方向会读出
+    1 − AUROC 的镜像值）。产品对外的"逆转"排序不受影响（那是另一条腿）。
+    """
     n_pos = int(pos_mask.sum())
     n_neg = int(len(scores) - n_pos)
     if n_pos == 0 or n_neg == 0:
@@ -138,7 +144,7 @@ def main():
     }
 
     # ---- 4 靶点：签名 + 药物打分 + 自身 AUROC ----
-    per_sig_scores = {}     # target -> np.array 药物 score（降序无关，按 drug_names 序）
+    per_sig_mimic = {}      # target -> mimic 分（高=模拟敲低，AUROC 用它）
     per_sig_df = {}
     for target in TARGETS:
         log(f"[{target}] 计算签名 ...")
@@ -149,13 +155,13 @@ def main():
         res = scorer.score_drugs(sig, method="xsum")
         df = pd.DataFrame(res["all_scores"]).set_index("drug_name")
         per_sig_df[target] = df
-        per_sig_scores[target] = df["score"].to_numpy()
+        mimic = -df["score"].to_numpy()      # score=-mimic → 取负
+        per_sig_mimic[target] = mimic
 
         pos, found, missing = gold_mask(drug_names, target)
-        scores = df["score"].to_numpy()
-        self_auroc = auroc(scores, pos)
-        # 金标准药物名次（按 score 降序）
-        rank_desc = pd.Series(scores).rank(
+        self_auroc = auroc(mimic, pos)
+        # 金标准药物名次（按 mimic 分降序）
+        rank_desc = pd.Series(mimic).rank(
             method="min", ascending=False).to_numpy()
         gold_ranks = sorted(int(r) for r in rank_desc[pos])
         out["targets"][target] = {
@@ -186,13 +192,13 @@ def main():
         log(f"[{target}] AUROC(自身抑制剂)={self_auroc} "
             f"gold {len(found)}/{len(found)+len(missing)} 在场")
 
-    # ---- 交叉对照 4×4 ----
+    # ---- 交叉对照 4×4（mimic 分方向） ----
     log("交叉对照 4×4 ...")
     for sig_target in TARGETS:
         row = {}
         for inh_target in TARGETS:
             pos, _, _ = gold_mask(drug_names, inh_target)
-            row[inh_target] = auroc(per_sig_scores[sig_target], pos)
+            row[inh_target] = auroc(per_sig_mimic[sig_target], pos)
         out["cross_auroc"][sig_target] = row
     # 特异性差值 = 自身 AUROC − 其他靶点抑制剂 AUROC 均值
     for t in TARGETS:
