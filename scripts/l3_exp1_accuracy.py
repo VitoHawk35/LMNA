@@ -144,25 +144,37 @@ def main():
     }
 
     # ---- 4 靶点：签名 + 药物打分 + 自身 AUROC ----
-    per_sig_mimic = {}      # target -> mimic 分（高=模拟敲低，AUROC 用它）
-    per_sig_df = {}
+    # 签名落盘缓存：分析修正后复跑不必重算 bootstrap（同名文件直接加载）。
+    sig_cache_dir = os.path.join(
+        os.path.dirname(os.path.abspath(args.out)), f"signatures_{args.side}")
+    os.makedirs(sig_cache_dir, exist_ok=True)
+
+    per_sig_mimic = {}      # target -> pd.Series(mimic 分, index=drug_name)
     for target in TARGETS:
-        log(f"[{target}] 计算签名 ...")
-        sig = engine.compute_signature(target)
+        sig_cache = os.path.join(sig_cache_dir, f"{target}.json")
+        if os.path.exists(sig_cache):
+            with open(sig_cache, encoding="utf-8") as fp:
+                sig = json.load(fp)
+            log(f"[{target}] 签名来自缓存 {sig_cache}")
+        else:
+            log(f"[{target}] 计算签名 ...")
+            sig = engine.compute_signature(target)
+            with open(sig_cache, "w", encoding="utf-8") as fp:
+                json.dump(sig, fp, ensure_ascii=False)
         log(f"[{target}] n={sig['n_samples']} n_sig={sig['n_sig']} "
             f"LOHO={sig['loho_jaccard_min']} grade={sig['qc']['grade']} "
             f"excluded_nan={sig.get('n_excluded_nan_genes', 0)}；药物打分 ...")
         res = scorer.score_drugs(sig, method="xsum")
         df = pd.DataFrame(res["all_scores"]).set_index("drug_name")
-        per_sig_df[target] = df
-        mimic = -df["score"].to_numpy()      # score=-mimic → 取负
+        # 注意：all_scores 按 score 降序，与 drug_names（矩阵列序）不同序，
+        # 金标准掩码必须按 df.index 构建，不能按 drug_names 构建。
+        mimic = pd.Series(-df["score"].to_numpy(), index=df.index)
         per_sig_mimic[target] = mimic
 
-        pos, found, missing = gold_mask(drug_names, target)
-        self_auroc = auroc(mimic, pos)
+        pos, found, missing = gold_mask(list(df.index), target)
+        self_auroc = auroc(mimic.to_numpy(), pos)
         # 金标准药物名次（按 mimic 分降序）
-        rank_desc = pd.Series(mimic).rank(
-            method="min", ascending=False).to_numpy()
+        rank_desc = mimic.rank(method="min", ascending=False).to_numpy()
         gold_ranks = sorted(int(r) for r in rank_desc[pos])
         out["targets"][target] = {
             "n_samples": int(sig["n_samples"]),
@@ -171,9 +183,11 @@ def main():
             "n_sig": int(sig["n_sig"]),
             "n_up": len(sig["up_genes"]),
             "n_down": len(sig["down_genes"]),
+            "up_genes": sig["up_genes"],
+            "down_genes": sig["down_genes"],
             "loho_jaccard_min": sig["loho_jaccard_min"],
             "grade": sig["qc"]["grade"],
-            "excluded_nan_genes": sig.get("excluded_nan_genes", []),
+            "n_excluded_nan_genes": sig.get("n_excluded_nan_genes", 0),
             "target_median_z": sig["target_median_z"],
             "auroc_self": self_auroc,
             "gold_found": found,
@@ -196,9 +210,10 @@ def main():
     log("交叉对照 4×4 ...")
     for sig_target in TARGETS:
         row = {}
+        s = per_sig_mimic[sig_target]
         for inh_target in TARGETS:
-            pos, _, _ = gold_mask(drug_names, inh_target)
-            row[inh_target] = auroc(per_sig_mimic[sig_target], pos)
+            pos, _, _ = gold_mask(list(s.index), inh_target)
+            row[inh_target] = auroc(s.to_numpy(), pos)
         out["cross_auroc"][sig_target] = row
     # 特异性差值 = 自身 AUROC − 其他靶点抑制剂 AUROC 均值
     for t in TARGETS:
