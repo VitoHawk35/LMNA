@@ -136,10 +136,6 @@ L3_DERIVED_DIR = os.getenv(
     "L3_DERIVED_DIR", os.path.join(DATA_DIR, "derived", "l3_v1")
 )
 
-# 签名聚合口径（参与缓存键，隔离 L3 实例级与 L5 MODZ 两套缓存文件）
-SIGNATURE_AGGREGATION = "instance" if DATA_PROVIDER.strip().lower() == "l3" \
-    else "modz"
-
 # ============ 任务队列 ============
 # running 任务超过该秒数没有心跳更新即视为超时（默认 7200 秒 = 2 小时）
 TASK_TIMEOUT_SEC = int(os.getenv("TASK_TIMEOUT_SEC", "7200"))
@@ -155,10 +151,10 @@ def signature_params() -> dict:
     """当前签名/药物打分所用的可复现参数，参与缓存键哈希。"""
     return {
         "ALGO_VERSION": ALGO_VERSION,
+        # DATA_PROVIDER 已足以隔离 L3/L5 缓存；聚合口径（instance/modz）
+        # 由 DATA_PROVIDER 派生，不再单独进哈希（评审 follow-up：避免
+        # 生产 L5 缓存因冗余键全部失效）。
         "DATA_PROVIDER": DATA_PROVIDER,
-        # L7e：聚合口径（instance/modz），与 DATA_PROVIDER 一起隔离
-        # L3/L5 签名缓存文件名（含药物缓存——同一哈希同时用于两种缓存）。
-        "aggregation": SIGNATURE_AGGREGATION,
         "KS_THRESHOLD": KS_THRESHOLD,
         "FDR_THRESHOLD": FDR_THRESHOLD,
         "BOOTSTRAP_N": BOOTSTRAP_N,

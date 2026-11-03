@@ -284,10 +284,8 @@ def test_cache_key_isolation_l3_vs_l5(monkeypatch):
     path_l5 = CacheManager.signature_path("CDK4")
 
     monkeypatch.setattr(config, "DATA_PROVIDER", "l3")
-    monkeypatch.setattr(config, "SIGNATURE_AGGREGATION", "instance")
     params_l3 = config.signature_params()
     assert params_l3["DATA_PROVIDER"] == "l3"
-    assert params_l3["aggregation"] == "instance"
     hash_l3 = signature_params_hash()
     path_l3 = CacheManager.signature_path("CDK4")
 
@@ -297,13 +295,12 @@ def test_cache_key_isolation_l3_vs_l5(monkeypatch):
     assert hash_l3 in os.path.basename(path_l3)
 
 
-def test_signature_params_has_aggregation_field():
+def test_signature_params_data_provider_field():
+    """缓存键由 DATA_PROVIDER 隔离 L3/L5；aggregation 派生键已移除（评审 follow-up）。"""
     import config
     params = config.signature_params()
     assert "DATA_PROVIDER" in params
-    assert "aggregation" in params
-    # 测试会话 DATA_PROVIDER=fixture（conftest）→ 非 l3 一律 modz
-    assert params["aggregation"] == "modz"
+    assert "aggregation" not in params
 
 
 # =====================================================================

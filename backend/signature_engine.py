@@ -19,7 +19,7 @@ from cache_manager import exclusive_file_lock, replace_file_with_retry
 from config import (
     KS_THRESHOLD, FDR_THRESHOLD, BOOTSTRAP_N, RANDOM_SEED,
     CACHE_DIR, FAST_MODE_TOP_N, MAX_GENES_PER_DIRECTION,
-    ALGO_VERSION, signature_params
+    ALGO_VERSION, DATA_PROVIDER, signature_params
 )
 from l3_robust_z import rank_columns_nanaware, RANK_NAN_SENTINEL
 from suitability import (
@@ -33,11 +33,15 @@ _SHRNA_RANK_SHAPE = None
 
 
 def _shrna_rank_cache_paths(n_shrna: int) -> tuple:
-    """秩缓存路径：带算法版本与 shRNA 列数，数据/算法变化后自动失效。"""
+    """秩缓存路径：带算法版本、数据源与 shRNA 列数，数据/算法变化后自动失效。
+
+    DATA_PROVIDER 段保证 L3/L5 秩缓存天然隔离；重建 L3 派生层时
+    若实例数相同，需按部署文档清空旧秩缓存（或改派生层版本目录）。
+    """
     if _SHRNA_RANK_CACHE and _SHRNA_RANK_SHAPE:
         return _SHRNA_RANK_CACHE, _SHRNA_RANK_SHAPE
     stem = os.path.join(
-        CACHE_DIR, f"_shrna_rank_matrix.v{ALGO_VERSION}.{n_shrna}"
+        CACHE_DIR, f"_shrna_rank_matrix.v{ALGO_VERSION}.{DATA_PROVIDER}.{n_shrna}"
     )
     return stem + ".dat", stem + ".shape.txt"
 

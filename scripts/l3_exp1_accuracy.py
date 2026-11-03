@@ -121,6 +121,7 @@ def main():
     from provider_factory import create_provider
     from signature_engine import SignatureEngine
     from drug_scorer import DrugScorer
+    from cache_manager import signature_params_hash
 
     assert config.DATA_PROVIDER == args.side, (
         f"DATA_PROVIDER={config.DATA_PROVIDER} 与 --side {args.side} 不一致")
@@ -145,13 +146,17 @@ def main():
 
     # ---- 4 靶点：签名 + 药物打分 + 自身 AUROC ----
     # 签名落盘缓存：分析修正后复跑不必重算 bootstrap（同名文件直接加载）。
+    # 文件名带 signature_params 短哈希（含 BOOTSTRAP_N/FDR/KS 阈值与
+    # DATA_PROVIDER），换参数或重建派生层后不会静默复用旧签名。
     sig_cache_dir = os.path.join(
         os.path.dirname(os.path.abspath(args.out)), f"signatures_{args.side}")
     os.makedirs(sig_cache_dir, exist_ok=True)
+    sig_params_hash = signature_params_hash()
 
     per_sig_mimic = {}      # target -> pd.Series(mimic 分, index=drug_name)
     for target in TARGETS:
-        sig_cache = os.path.join(sig_cache_dir, f"{target}.json")
+        sig_cache = os.path.join(
+            sig_cache_dir, f"{target}.{sig_params_hash}.json")
         if os.path.exists(sig_cache):
             with open(sig_cache, encoding="utf-8") as fp:
                 sig = json.load(fp)

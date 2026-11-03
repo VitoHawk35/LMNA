@@ -87,9 +87,17 @@ class L3Provider(IDataProvider):
         self._lm_entrez = row_genes["entrez_id"].tolist()
 
         # ---- 启动校验：行列 ID 与 manifest 逐一一致，不一致拒绝启动 ----
-        expected_col_sha = self.manifest.get("matrix", {}).get("col_ids_sha256")
+        # fail-closed：manifest 缺 sha256/shape 键视为不完整（可能被篡改），
+        # 同样拒绝启动，不做静默跳过。
+        matrix_manifest = self.manifest.get("matrix", {})
+        expected_col_sha = matrix_manifest.get("col_ids_sha256")
+        if not expected_col_sha:
+            raise RuntimeError(
+                "L3 派生层 manifest 缺少 matrix.col_ids_sha256，"
+                "清单不完整或可能被篡改，拒绝启动。"
+            )
         actual_col_sha = _sha256_lines(self._col_ids)
-        if expected_col_sha and actual_col_sha != expected_col_sha:
+        if actual_col_sha != expected_col_sha:
             raise RuntimeError(
                 "L3 派生层行 ID 花名册与 manifest 不一致："
                 f"col_ids.txt sha256={actual_col_sha[:12]}…，"
@@ -99,9 +107,14 @@ class L3Provider(IDataProvider):
         row_lines = [
             f"{e},{s}" for e, s in zip(self._lm_entrez, self._gene_symbols)
         ]
-        expected_row_sha = self.manifest.get("matrix", {}).get("row_genes_sha256")
+        expected_row_sha = matrix_manifest.get("row_genes_sha256")
+        if not expected_row_sha:
+            raise RuntimeError(
+                "L3 派生层 manifest 缺少 matrix.row_genes_sha256，"
+                "清单不完整或可能被篡改，拒绝启动。"
+            )
         actual_row_sha = _sha256_lines(row_lines)
-        if expected_row_sha and actual_row_sha != expected_row_sha:
+        if actual_row_sha != expected_row_sha:
             raise RuntimeError(
                 "L3 派生层列 ID（978 landmark）花名册与 manifest 不一致："
                 f"row_genes.csv sha256={actual_row_sha[:12]}…，"
@@ -126,7 +139,12 @@ class L3Provider(IDataProvider):
             )
 
         # ---- 矩阵（memmap，行=实例） ----
-        shape = self.manifest.get("matrix", {}).get("shape")
+        shape = matrix_manifest.get("shape")
+        if not shape:
+            raise RuntimeError(
+                "L3 派生层 manifest 缺少 matrix.shape，"
+                "清单不完整或可能被篡改，拒绝启动。"
+            )
         self._matrix = np.load(
             os.path.join(self.root, "l3_landmark.npy"), mmap_mode="r")
         if self._matrix.ndim != 2 or \
@@ -135,7 +153,7 @@ class L3Provider(IDataProvider):
                 f"l3_landmark.npy 形状 {tuple(self._matrix.shape)} 与花名册 "
                 f"({len(self._col_ids)}, {len(self._gene_symbols)}) 不一致，拒绝启动。"
             )
-        if shape and list(self._matrix.shape) != list(shape):
+        if list(self._matrix.shape) != list(shape):
             raise RuntimeError(
                 f"l3_landmark.npy 形状 {tuple(self._matrix.shape)} 与 manifest "
                 f"{shape} 不一致，拒绝启动。"
