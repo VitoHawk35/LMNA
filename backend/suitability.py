@@ -199,6 +199,7 @@ def loho_jaccard_min(
     G: int,
     k: Optional[int] = None,
     min_remaining: Optional[int] = None,
+    gene_valid_mask: Optional[np.ndarray] = None,
 ) -> Tuple[Optional[float], Dict]:
     """
     计算留一 hairpin 的签名 Jaccard 最小值。
@@ -210,6 +211,8 @@ def loho_jaccard_min(
         G: 基因数（KS 的分母）。
         k: 取前 k 个基因；缺省时使用 len(full_top_indices)。
         min_remaining: 去掉一条 hairpin 后至少剩余的样本数，缺省 3。
+        gene_valid_mask: (G,) bool，False 的基因（L7e：MAD=0 剔除基因）
+            不进 top 集；缺省 None = 全部有效（行为与旧版一致）。
 
     Returns:
         (min_jaccard, detail)
@@ -246,6 +249,9 @@ def loho_jaccard_min(
 
         sub_ranks = ranks[:, keep]
         ks = ks_uniform_batch(sub_ranks, G)
+        if gene_valid_mask is not None:
+            # 剔除基因的秩含哨兵 0，KS 为伪值；置 0 使其不进 top 集
+            ks = np.where(np.asarray(gene_valid_mask, dtype=bool), ks, 0.0)
         top = np.argsort(-np.abs(ks))[:k]
         top_set = {int(i) for i in top}
         union = full_set | top_set

@@ -235,10 +235,12 @@ def test_multiprocessing_rank_cache_built_once(tmp_path):
     assert log.count("WORKER_DONE") == 2
 
     dat_path = os.path.join(
-        cache_dir, f"_shrna_rank_matrix.v{config.ALGO_VERSION}.{n_sigs}.dat"
+        cache_dir,
+        f"_shrna_rank_matrix.v{config.ALGO_VERSION}.{config.DATA_PROVIDER}.{n_sigs}.dat"
     )
     shape_path = os.path.join(
-        cache_dir, f"_shrna_rank_matrix.v{config.ALGO_VERSION}.{n_sigs}.shape.txt"
+        cache_dir,
+        f"_shrna_rank_matrix.v{config.ALGO_VERSION}.{config.DATA_PROVIDER}.{n_sigs}.shape.txt"
     )
     assert os.path.exists(dat_path)
     assert os.path.exists(shape_path)
