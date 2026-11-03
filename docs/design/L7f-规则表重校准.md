@@ -37,10 +37,24 @@ GOLD 口径一致。
 RTK 与部分 CDK 在 LINCS KD 中签名偏弱）、难度/阴性对照仍红
 （TP53/MYC/LMNA，无直接抑制剂）。
 
-### 2.1 数据覆盖核实（服务器实测）
+### 2.1 数据覆盖核实（服务器实测，`coverage_l3.json` / `coverage_l5.json`）
 
-（待填：coverage_l3.json / coverage_l5.json——每靶点 shRNA 实例数、hairpin 数、
-金标准药物在场/缺席清单）
+- **21/21 靶点两侧均有 shRNA 数据**（`list_available_genes` 命中），hairpin 数
+  全部 ≥ 2（最低 LMNA 3、MAP2K1 5），数据前置门槛全过。
+- L3 侧样本/hairpin：MET 826/17、MYC 860/16、BRAF 689/14、EGFR 680/20、
+  AKT1 615/12、CDK2 614/16、CDK6 542/16、MTOR 455/18、AURKA 417/9、
+  HDAC1 367/12、ERBB2 313/9、PIK3CA 286/11、CDK4 210/11、MAP2K1 196/5、
+  TP53 196/7、JAK2 144/11、PLK1 131/11、FGFR1 129/12、CDK9 113/10、
+  ALK 111/9、LMNA 93/3（合计 7,987 实例）。
+- L5 侧同靶点样本约为 L3 的 1/3（MODZ 聚合，合计 2,761；如 EGFR 240/20、
+  CDK4 71/11），与 L7e 阶段2 观测一致。
+- **金标准药物在场**（LINCS 19,811 药，别名组精确匹配）：18 个有金标准的
+  靶点每组至少 1 药在场。较弱者：CDK6 1/3（仅 palbociclib；ribociclib/
+  abemaciclib 不在 LINCS）、ALK 2/5（crizotinib、nvp-tae684）、CDK2 2/4
+  （roscovitine、alvocidib）、PLK1 2/4（bi-2536、on-01910）、AKT1 2/5
+  （mk-2206、triciribine）。缺席者均为 LINCS 未收录的新药
+  （与 L7e 阶段2 §6.1 锚点核对一致）。CDK6 AUROC 仅 1 个正例，
+  解释时谨慎（详见 §10）。
 
 ## 3. 方法口径
 
@@ -117,7 +131,7 @@ Spearman(档, AUROC)、空隙区救回清单与其 AUROC、TP53/MYC/LMNA 是否�
 
 # 覆盖核查（分钟级）
 ssh -i ~/.ssh/lmna_deploy keji@10.39.15.238
-cd <worktree>   # 本分支检出
+cd /home/keji/l3_tmp/l7f   # 本分支代码部署点（backend/ + scripts/l7f_panel/）
 PY=~/miniconda3/envs/cmap/bin/python
 DATA_PROVIDER=l3 L3_DERIVED_DIR=/home/keji/l3_tmp/derived/l3_v1 \
 CMAP_DATA_DIR=/home/keji/cmap_v2_data LMNA_CACHE_DIR=/home/keji/l3_tmp/l7f_cache \
@@ -125,17 +139,19 @@ LINCS_INTEGRITY_MODE=off \
 $PY -B scripts/l7f_panel/check_coverage.py --side l3 \
   --out /home/keji/l3_tmp/l7f_results/coverage_l3.json
 
-# 面板重跑（L3 侧 4 分片并行示例；L5 侧改 DATA_PROVIDER=l5 与 cache 目录）
-for i in 0 1 2 3; do
+# 面板重跑（本任务实际跑法：L3 侧 11 分片、L5 侧 7 分片并行，56 核服务器）
+for i in $(seq 0 10); do
   DATA_PROVIDER=l3 L3_DERIVED_DIR=/home/keji/l3_tmp/derived/l3_v1 \
   CMAP_DATA_DIR=/home/keji/cmap_v2_data LMNA_CACHE_DIR=/home/keji/l3_tmp/l7f_cache \
   BOOTSTRAP_N=100000 FDR_THRESHOLD=0.001 KS_THRESHOLD=0.2 DRUG_NULL_N=10000 \
   LINCS_INTEGRITY_MODE=off FAST_MODE_TOP_N=0 \
-  nohup $PY -B scripts/l7f_panel/run_panel.py --side l3 --shard $i/4 \
+  nohup $PY -B -u scripts/l7f_panel/run_panel.py --side l3 --shard $i/11 \
     $( [ $i -eq 0 ] && echo --with-neg-ctrl ) \
     --out /home/keji/l3_tmp/l7f_results/panel_l3_shard$i.json \
     > /home/keji/l3_tmp/l7f_results/panel_l3_shard$i.log 2>&1 &
 done
+# L5 侧：DATA_PROVIDER=l5、LMNA_CACHE_DIR=/home/keji/l3_tmp/l7f_cache_l5、
+#        --shard $i/7、输出 panel_l5_shard$i.json
 
 # 本地分析（合并分片 → 方案对比）
 D:/mine_Anaconda3/python.exe -I scripts/l7f_panel/analyze_results.py \
