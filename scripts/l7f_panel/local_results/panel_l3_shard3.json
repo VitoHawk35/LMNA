@@ -1,0 +1,110 @@
+{
+  "side": "l3",
+  "shard": "3/11",
+  "params": {
+    "ALGO_VERSION": "2",
+    "DATA_PROVIDER": "l3",
+    "KS_THRESHOLD": 0.2,
+    "FDR_THRESHOLD": 0.001,
+    "BOOTSTRAP_N": 100000,
+    "RANDOM_SEED": 42,
+    "FAST_MODE_TOP_N": 0,
+    "MAX_GENES_PER_DIRECTION": 50,
+    "DRUG_NULL_N": 10000
+  },
+  "grading_thresholds": {
+    "RULE_VERSION": "4.5",
+    "SUITABILITY_MIN_SIG": 5,
+    "SUITABILITY_YELLOW_MIN_SIG": 20,
+    "SUITABILITY_JACCARD_GREEN": 0.5,
+    "SUITABILITY_JACCARD_RED": 0.3
+  },
+  "n_drugs": 19811,
+  "coverage": {
+    "BRAF": {
+      "n_samples": 689,
+      "n_hairpins": 14,
+      "in_available_genes": true
+    },
+    "MAP2K1": {
+      "n_samples": 196,
+      "n_hairpins": 5,
+      "in_available_genes": true
+    }
+  },
+  "targets": {
+    "BRAF": {
+      "n_samples": 689,
+      "n_hairpins": 14,
+      "n_cells": 13,
+      "n_sig": 24,
+      "n_up": 8,
+      "n_down": 16,
+      "loho_jaccard_min": 0.6551724137931034,
+      "grade": "green",
+      "rule_version": "4.5",
+      "n_excluded_nan_genes": 250,
+      "target_median_z": null,
+      "auroc_self": 0.6877542776351098,
+      "gold_found": [
+        "plx4032",
+        "dabrafenib",
+        "sorafenib",
+        "plx-4720",
+        "gsk1120212",
+        "azd6244",
+        "pd-0325901"
+      ],
+      "gold_missing": [
+        "ci-1040"
+      ],
+      "gold_best_rank": 364,
+      "gold_ranks": [
+        364,
+        3149,
+        3602,
+        6584,
+        6891,
+        7040,
+        15684
+      ],
+      "gold_top50_hits": 0,
+      "frac_drugs_fdr_reversal_lt_0.05": 0.03609106052193226
+    },
+    "MAP2K1": {
+      "n_samples": 196,
+      "n_hairpins": 5,
+      "n_cells": 11,
+      "n_sig": 29,
+      "n_up": 14,
+      "n_down": 15,
+      "loho_jaccard_min": 0.20833333333333334,
+      "grade": "red",
+      "rule_version": "4.5",
+      "n_excluded_nan_genes": 250,
+      "target_median_z": null,
+      "auroc_self": 0.9910305600430802,
+      "gold_found": [
+        "gsk1120212",
+        "arry-142886",
+        "pd-0325901"
+      ],
+      "gold_missing": [
+        "cobimetinib",
+        "ci-1040",
+        "bay-86-9766",
+        "arry-162"
+      ],
+      "gold_best_rank": 105,
+      "gold_ranks": [
+        105,
+        156,
+        278
+      ],
+      "gold_top50_hits": 0,
+      "frac_drugs_fdr_reversal_lt_0.05": 0.0
+    }
+  },
+  "negative_control": {},
+  "elapsed_s": 4838.6
+}

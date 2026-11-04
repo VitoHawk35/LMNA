@@ -1,0 +1,104 @@
+{
+  "side": "l3",
+  "shard": "8/11",
+  "params": {
+    "ALGO_VERSION": "2",
+    "DATA_PROVIDER": "l3",
+    "KS_THRESHOLD": 0.2,
+    "FDR_THRESHOLD": 0.001,
+    "BOOTSTRAP_N": 100000,
+    "RANDOM_SEED": 42,
+    "FAST_MODE_TOP_N": 0,
+    "MAX_GENES_PER_DIRECTION": 50,
+    "DRUG_NULL_N": 10000
+  },
+  "grading_thresholds": {
+    "RULE_VERSION": "4.5",
+    "SUITABILITY_MIN_SIG": 5,
+    "SUITABILITY_YELLOW_MIN_SIG": 20,
+    "SUITABILITY_JACCARD_GREEN": 0.5,
+    "SUITABILITY_JACCARD_RED": 0.3
+  },
+  "n_drugs": 19811,
+  "coverage": {
+    "EGFR": {
+      "n_samples": 680,
+      "n_hairpins": 20,
+      "in_available_genes": true
+    },
+    "PLK1": {
+      "n_samples": 131,
+      "n_hairpins": 11,
+      "in_available_genes": true
+    }
+  },
+  "targets": {
+    "EGFR": {
+      "n_samples": 680,
+      "n_hairpins": 20,
+      "n_cells": 15,
+      "n_sig": 18,
+      "n_up": 4,
+      "n_down": 14,
+      "loho_jaccard_min": 0.38461538461538464,
+      "grade": "red",
+      "rule_version": "4.5",
+      "n_excluded_nan_genes": 250,
+      "target_median_z": -1.382652759552002,
+      "auroc_self": 0.6904232937810317,
+      "gold_found": [
+        "gefitinib",
+        "erlotinib",
+        "afatinib",
+        "lapatinib",
+        "canertinib",
+        "ekb-569"
+      ],
+      "gold_missing": [
+        "dacomitinib"
+      ],
+      "gold_best_rank": 2365,
+      "gold_ranks": [
+        2365,
+        2468,
+        4748,
+        4843,
+        6947,
+        15437
+      ],
+      "gold_top50_hits": 0,
+      "frac_drugs_fdr_reversal_lt_0.05": 0.09257483216394932
+    },
+    "PLK1": {
+      "n_samples": 131,
+      "n_hairpins": 11,
+      "n_cells": 9,
+      "n_sig": 38,
+      "n_up": 11,
+      "n_down": 27,
+      "loho_jaccard_min": 0.52,
+      "grade": "green",
+      "rule_version": "4.5",
+      "n_excluded_nan_genes": 250,
+      "target_median_z": -2.009314775466919,
+      "auroc_self": 0.8625624716038165,
+      "gold_found": [
+        "bi-2536",
+        "on-01910"
+      ],
+      "gold_missing": [
+        "bi-6727",
+        "gsk461364"
+      ],
+      "gold_best_rank": 1778,
+      "gold_ranks": [
+        1778,
+        3670
+      ],
+      "gold_top50_hits": 0,
+      "frac_drugs_fdr_reversal_lt_0.05": 0.07102114986623594
+    }
+  },
+  "negative_control": {},
+  "elapsed_s": 4469.4
+}

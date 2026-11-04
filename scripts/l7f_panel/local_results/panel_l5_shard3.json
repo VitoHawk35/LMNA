@@ -1,0 +1,134 @@
+{
+  "side": "l5",
+  "shard": "3/7",
+  "params": {
+    "ALGO_VERSION": "2",
+    "DATA_PROVIDER": "l5",
+    "KS_THRESHOLD": 0.2,
+    "FDR_THRESHOLD": 0.001,
+    "BOOTSTRAP_N": 100000,
+    "RANDOM_SEED": 42,
+    "FAST_MODE_TOP_N": 0,
+    "MAX_GENES_PER_DIRECTION": 50,
+    "DRUG_NULL_N": 10000
+  },
+  "grading_thresholds": {
+    "RULE_VERSION": "4.5",
+    "SUITABILITY_MIN_SIG": 5,
+    "SUITABILITY_YELLOW_MIN_SIG": 20,
+    "SUITABILITY_JACCARD_GREEN": 0.5,
+    "SUITABILITY_JACCARD_RED": 0.3
+  },
+  "n_drugs": 19811,
+  "coverage": {
+    "BRAF": {
+      "n_samples": 231,
+      "n_hairpins": 14,
+      "in_available_genes": true
+    },
+    "FGFR1": {
+      "n_samples": 43,
+      "n_hairpins": 12,
+      "in_available_genes": true
+    },
+    "MYC": {
+      "n_samples": 290,
+      "n_hairpins": 14,
+      "in_available_genes": true
+    }
+  },
+  "targets": {
+    "BRAF": {
+      "n_samples": 231,
+      "n_hairpins": 14,
+      "n_cells": 13,
+      "n_sig": 25,
+      "n_up": 8,
+      "n_down": 17,
+      "loho_jaccard_min": 0.5625,
+      "grade": "green",
+      "rule_version": "4.5",
+      "n_excluded_nan_genes": 0,
+      "target_median_z": null,
+      "auroc_self": 0.7427936636177396,
+      "gold_found": [
+        "plx4032",
+        "dabrafenib",
+        "sorafenib",
+        "plx-4720",
+        "gsk1120212",
+        "azd6244",
+        "pd-0325901"
+      ],
+      "gold_missing": [
+        "ci-1040"
+      ],
+      "gold_best_rank": 21,
+      "gold_ranks": [
+        21,
+        120,
+        227,
+        459,
+        3999,
+        14303,
+        16555
+      ],
+      "gold_top50_hits": 1,
+      "frac_drugs_fdr_reversal_lt_0.05": 0.0
+    },
+    "FGFR1": {
+      "n_samples": 43,
+      "n_hairpins": 12,
+      "n_cells": 9,
+      "n_sig": 0,
+      "n_up": 0,
+      "n_down": 0,
+      "loho_jaccard_min": 0.17647058823529413,
+      "grade": "red",
+      "rule_version": "4.5",
+      "n_excluded_nan_genes": 0,
+      "target_median_z": null,
+      "auroc_self": 0.5,
+      "gold_found": [
+        "ap24534",
+        "bgj398",
+        "pd-173074",
+        "chir-258"
+      ],
+      "gold_missing": [
+        "azd4547"
+      ],
+      "gold_best_rank": 1,
+      "gold_ranks": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "gold_top50_hits": 4,
+      "frac_drugs_fdr_reversal_lt_0.05": 0.0
+    },
+    "MYC": {
+      "n_samples": 290,
+      "n_hairpins": 14,
+      "n_cells": 14,
+      "n_sig": 90,
+      "n_up": 31,
+      "n_down": 50,
+      "loho_jaccard_min": 0.4594594594594595,
+      "grade": "yellow",
+      "rule_version": "4.5",
+      "n_excluded_nan_genes": 0,
+      "target_median_z": -0.34866848587989807,
+      "auroc_self": null,
+      "gold_found": [],
+      "gold_missing": [],
+      "gold_best_rank": null,
+      "gold_ranks": [],
+      "gold_top50_hits": 0,
+      "frac_drugs_fdr_reversal_lt_0.05": 0.012821159961637475
+    }
+  },
+  "negative_control": {},
+  "elapsed_s": 2976.5
+}

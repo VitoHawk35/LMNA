@@ -1,0 +1,98 @@
+{
+  "side": "l3",
+  "shard": "4/11",
+  "params": {
+    "ALGO_VERSION": "2",
+    "DATA_PROVIDER": "l3",
+    "KS_THRESHOLD": 0.2,
+    "FDR_THRESHOLD": 0.001,
+    "BOOTSTRAP_N": 100000,
+    "RANDOM_SEED": 42,
+    "FAST_MODE_TOP_N": 0,
+    "MAX_GENES_PER_DIRECTION": 50,
+    "DRUG_NULL_N": 10000
+  },
+  "grading_thresholds": {
+    "RULE_VERSION": "4.5",
+    "SUITABILITY_MIN_SIG": 5,
+    "SUITABILITY_YELLOW_MIN_SIG": 20,
+    "SUITABILITY_JACCARD_GREEN": 0.5,
+    "SUITABILITY_JACCARD_RED": 0.3
+  },
+  "n_drugs": 19811,
+  "coverage": {
+    "CDK2": {
+      "n_samples": 614,
+      "n_hairpins": 16,
+      "in_available_genes": true
+    },
+    "MET": {
+      "n_samples": 826,
+      "n_hairpins": 17,
+      "in_available_genes": true
+    }
+  },
+  "targets": {
+    "CDK2": {
+      "n_samples": 614,
+      "n_hairpins": 16,
+      "n_cells": 15,
+      "n_sig": 6,
+      "n_up": 3,
+      "n_down": 3,
+      "loho_jaccard_min": 0.42857142857142855,
+      "grade": "red",
+      "rule_version": "4.5",
+      "n_excluded_nan_genes": 250,
+      "target_median_z": -2.802480936050415,
+      "auroc_self": 0.36965520722903733,
+      "gold_found": [
+        "cyc202",
+        "alvocidib"
+      ],
+      "gold_missing": [
+        "dinaciclib",
+        "azd5438"
+      ],
+      "gold_best_rank": 7735,
+      "gold_ranks": [
+        7735,
+        17241
+      ],
+      "gold_top50_hits": 0,
+      "frac_drugs_fdr_reversal_lt_0.05": 0.0
+    },
+    "MET": {
+      "n_samples": 826,
+      "n_hairpins": 17,
+      "n_cells": 11,
+      "n_sig": 1,
+      "n_up": 0,
+      "n_down": 1,
+      "loho_jaccard_min": 0.5384615384615384,
+      "grade": "red",
+      "rule_version": "4.5",
+      "n_excluded_nan_genes": 250,
+      "target_median_z": null,
+      "auroc_self": 0.5583434302638665,
+      "gold_found": [
+        "crizotinib",
+        "foretinib",
+        "pha-665752"
+      ],
+      "gold_missing": [
+        "bms-907351"
+      ],
+      "gold_best_rank": 7288,
+      "gold_ranks": [
+        7288,
+        8967,
+        9996
+      ],
+      "gold_top50_hits": 0,
+      "frac_drugs_fdr_reversal_lt_0.05": 0.0
+    }
+  },
+  "negative_control": {},
+  "elapsed_s": 7815.2
+}

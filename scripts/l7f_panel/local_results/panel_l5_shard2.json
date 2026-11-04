@@ -1,0 +1,147 @@
+{
+  "side": "l5",
+  "shard": "2/7",
+  "params": {
+    "ALGO_VERSION": "2",
+    "DATA_PROVIDER": "l5",
+    "KS_THRESHOLD": 0.2,
+    "FDR_THRESHOLD": 0.001,
+    "BOOTSTRAP_N": 100000,
+    "RANDOM_SEED": 42,
+    "FAST_MODE_TOP_N": 0,
+    "MAX_GENES_PER_DIRECTION": 50,
+    "DRUG_NULL_N": 10000
+  },
+  "grading_thresholds": {
+    "RULE_VERSION": "4.5",
+    "SUITABILITY_MIN_SIG": 5,
+    "SUITABILITY_YELLOW_MIN_SIG": 20,
+    "SUITABILITY_JACCARD_GREEN": 0.5,
+    "SUITABILITY_JACCARD_RED": 0.3
+  },
+  "n_drugs": 19811,
+  "coverage": {
+    "AURKA": {
+      "n_samples": 139,
+      "n_hairpins": 9,
+      "in_available_genes": true
+    },
+    "ERBB2": {
+      "n_samples": 115,
+      "n_hairpins": 9,
+      "in_available_genes": true
+    },
+    "MTOR": {
+      "n_samples": 152,
+      "n_hairpins": 18,
+      "in_available_genes": true
+    }
+  },
+  "targets": {
+    "AURKA": {
+      "n_samples": 139,
+      "n_hairpins": 9,
+      "n_cells": 11,
+      "n_sig": 65,
+      "n_up": 17,
+      "n_down": 48,
+      "loho_jaccard_min": 0.5294117647058824,
+      "grade": "green",
+      "rule_version": "4.5",
+      "n_excluded_nan_genes": 0,
+      "target_median_z": -1.1734917163848877,
+      "auroc_self": 0.8203160498813551,
+      "gold_found": [
+        "alisertib",
+        "mk-0457",
+        "danusertib",
+        "enmd-2076"
+      ],
+      "gold_missing": [],
+      "gold_best_rank": 2379,
+      "gold_ranks": [
+        2379,
+        2519,
+        4547,
+        4801
+      ],
+      "gold_top50_hits": 0,
+      "frac_drugs_fdr_reversal_lt_0.05": 0.10802079652718187
+    },
+    "ERBB2": {
+      "n_samples": 115,
+      "n_hairpins": 9,
+      "n_cells": 14,
+      "n_sig": 62,
+      "n_up": 23,
+      "n_down": 39,
+      "loho_jaccard_min": 0.3333333333333333,
+      "grade": "yellow",
+      "rule_version": "4.5",
+      "n_excluded_nan_genes": 0,
+      "target_median_z": -1.8052825927734375,
+      "auroc_self": 0.3787943047561345,
+      "gold_found": [
+        "lapatinib",
+        "hki-272",
+        "afatinib",
+        "canertinib",
+        "ekb-569"
+      ],
+      "gold_missing": [],
+      "gold_best_rank": 4994,
+      "gold_ranks": [
+        4994,
+        11359,
+        11993,
+        15551,
+        17636
+      ],
+      "gold_top50_hits": 0,
+      "frac_drugs_fdr_reversal_lt_0.05": 0.0
+    },
+    "MTOR": {
+      "n_samples": 152,
+      "n_hairpins": 18,
+      "n_cells": 12,
+      "n_sig": 40,
+      "n_up": 10,
+      "n_down": 30,
+      "loho_jaccard_min": 0.40350877192982454,
+      "grade": "yellow",
+      "rule_version": "4.5",
+      "n_excluded_nan_genes": 0,
+      "target_median_z": null,
+      "auroc_self": 0.9972226430338837,
+      "gold_found": [
+        "rapamycin",
+        "everolimus",
+        "temsirolimus",
+        "torin-1",
+        "torin-2",
+        "bez235",
+        "pi-103",
+        "wortmannin"
+      ],
+      "gold_missing": [
+        "azd8055",
+        "ly294002"
+      ],
+      "gold_best_rank": 2,
+      "gold_ranks": [
+        2,
+        4,
+        22,
+        52,
+        73,
+        84,
+        117,
+        122
+      ],
+      "gold_top50_hits": 3,
+      "frac_drugs_fdr_reversal_lt_0.05": 0.0
+    }
+  },
+  "negative_control": {},
+  "elapsed_s": 2161.0
+}

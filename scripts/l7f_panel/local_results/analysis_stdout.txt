@@ -1,0 +1,36 @@
+L3 靶点 21/21，缺 []
+L5 靶点 21/21，缺 []
+单调性[current]: 通过
+单调性[A]: 通过
+单调性[B35]: 通过
+单调性[B40]: 通过
+单调性[B45]: 通过
+单调性[C]: 通过
+
+## 四元组总表
+
+| 靶点 | 角色/预期 | L3 n_sig | L3 LOHO | L3 AUROC | L3 档(4.5) | L5 n_sig | L5 LOHO | L5 AUROC | L5 档(4.5) |
+|---|---|---|---|---|---|---|---|---|---|
+| AKT1 | baseline/yellow | 43 | 0.564 | 0.783 | green | 78 | 0.451 | 0.745 | yellow |
+| ALK | extension/gap | 10 | 0.333 | 0.788 | red | 0 | 0.176 | 0.500 | red |
+| AURKA | extension/green | 53 | 0.656 | 0.822 | green | 65 | 0.529 | 0.820 | green |
+| BRAF | baseline/yellow | 24 | 0.655 | 0.688 | green | 25 | 0.562 | 0.743 | green |
+| CDK2 | extension/gap | 6 | 0.429 | 0.370 | red | 26 | 0.444 | 0.398 | yellow |
+| CDK4 | baseline/green | 101 | 0.676 | 0.819 | green | 83 | 0.636 | 0.815 | green |
+| CDK6 | extension/green | 25 | 0.724 | 0.990 | green | 0 | 0.667 | 0.500 | red |
+| CDK9 | extension/yellow | 35 | 0.400 | 0.508 | yellow | 0 | 0.333 | 0.500 | red |
+| EGFR | baseline/gap | 18 | 0.385 | 0.690 | red | 25 | 0.316 | 0.728 | yellow |
+| ERBB2 | extension/gap | 28 | 0.302 | 0.289 | yellow | 62 | 0.333 | 0.379 | yellow |
+| FGFR1 | extension/gap | 16 | 0.333 | 0.595 | red | 0 | 0.176 | 0.500 | red |
+| HDAC1 | baseline/green | 10 | 0.333 | 0.890 | red | 34 | 0.360 | 0.776 | yellow |
+| JAK2 | baseline/yellow | 26 | 0.444 | 0.586 | yellow | 0 | 0.250 | 0.500 | red |
+| LMNA | project/red | 51 | 0.397 | — | yellow | 0 | 0.111 | — | red |
+| MAP2K1 | extension/green | 29 | 0.208 | 0.991 | red | 27 | 0.256 | 0.973 | red |
+| MET | extension/gap | 1 | 0.538 | 0.558 | red | 5 | 0.429 | 0.360 | red |
+| MTOR | baseline/green | 31 | 0.590 | 0.956 | green | 40 | 0.404 | 0.997 | yellow |
+| MYC | baseline/red | 58 | 0.785 | — | green | 90 | 0.459 | — | yellow |
+| PIK3CA | baseline/green | 9 | 0.429 | 0.310 | red | 0 | 0.538 | 0.500 | red |
+| PLK1 | extension/green | 38 | 0.520 | 0.863 | green | 16 | 0.455 | 0.799 | red |
+| TP53 | baseline/red | 79 | 0.510 | — | green | 40 | 0.333 | — | yellow |
+
+写出 scripts/l7f_panel/local_results/analysis.json

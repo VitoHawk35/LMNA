@@ -1,0 +1,101 @@
+{
+  "side": "l3",
+  "shard": "1/11",
+  "params": {
+    "ALGO_VERSION": "2",
+    "DATA_PROVIDER": "l3",
+    "KS_THRESHOLD": 0.2,
+    "FDR_THRESHOLD": 0.001,
+    "BOOTSTRAP_N": 100000,
+    "RANDOM_SEED": 42,
+    "FAST_MODE_TOP_N": 0,
+    "MAX_GENES_PER_DIRECTION": 50,
+    "DRUG_NULL_N": 10000
+  },
+  "grading_thresholds": {
+    "RULE_VERSION": "4.5",
+    "SUITABILITY_MIN_SIG": 5,
+    "SUITABILITY_YELLOW_MIN_SIG": 20,
+    "SUITABILITY_JACCARD_GREEN": 0.5,
+    "SUITABILITY_JACCARD_RED": 0.3
+  },
+  "n_drugs": 19811,
+  "coverage": {
+    "ALK": {
+      "n_samples": 111,
+      "n_hairpins": 9,
+      "in_available_genes": true
+    },
+    "JAK2": {
+      "n_samples": 144,
+      "n_hairpins": 11,
+      "in_available_genes": true
+    }
+  },
+  "targets": {
+    "ALK": {
+      "n_samples": 111,
+      "n_hairpins": 9,
+      "n_cells": 8,
+      "n_sig": 10,
+      "n_up": 5,
+      "n_down": 5,
+      "loho_jaccard_min": 0.3333333333333333,
+      "grade": "red",
+      "rule_version": "4.5",
+      "n_excluded_nan_genes": 250,
+      "target_median_z": null,
+      "auroc_self": 0.7877732343884093,
+      "gold_found": [
+        "crizotinib",
+        "nvp-tae684"
+      ],
+      "gold_missing": [
+        "ceritinib",
+        "alectinib",
+        "lorlatinib"
+      ],
+      "gold_best_rank": 640,
+      "gold_ranks": [
+        640,
+        7771
+      ],
+      "gold_top50_hits": 0,
+      "frac_drugs_fdr_reversal_lt_0.05": 0.0
+    },
+    "JAK2": {
+      "n_samples": 144,
+      "n_hairpins": 11,
+      "n_cells": 11,
+      "n_sig": 26,
+      "n_up": 15,
+      "n_down": 11,
+      "loho_jaccard_min": 0.4444444444444444,
+      "grade": "yellow",
+      "rule_version": "4.5",
+      "n_excluded_nan_genes": 250,
+      "target_median_z": null,
+      "auroc_self": 0.5860090199246096,
+      "gold_found": [
+        "incb018424",
+        "cyt387",
+        "cep-701"
+      ],
+      "gold_missing": [
+        "fedratinib",
+        "baricitinib",
+        "azd1480"
+      ],
+      "gold_best_rank": 3167,
+      "gold_ranks": [
+        3167,
+        8205,
+        13235
+      ],
+      "gold_top50_hits": 0,
+      "frac_drugs_fdr_reversal_lt_0.05": 0.0
+    }
+  },
+  "negative_control": {},
+  "elapsed_s": 1588.9
+}

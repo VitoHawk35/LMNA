@@ -1,0 +1,193 @@
+{
+  "side": "l5",
+  "shard": "0/7",
+  "params": {
+    "ALGO_VERSION": "2",
+    "DATA_PROVIDER": "l5",
+    "KS_THRESHOLD": 0.2,
+    "FDR_THRESHOLD": 0.001,
+    "BOOTSTRAP_N": 100000,
+    "RANDOM_SEED": 42,
+    "FAST_MODE_TOP_N": 0,
+    "MAX_GENES_PER_DIRECTION": 50,
+    "DRUG_NULL_N": 10000
+  },
+  "grading_thresholds": {
+    "RULE_VERSION": "4.5",
+    "SUITABILITY_MIN_SIG": 5,
+    "SUITABILITY_YELLOW_MIN_SIG": 20,
+    "SUITABILITY_JACCARD_GREEN": 0.5,
+    "SUITABILITY_JACCARD_RED": 0.3
+  },
+  "n_drugs": 19811,
+  "coverage": {
+    "AKT1": {
+      "n_samples": 217,
+      "n_hairpins": 12,
+      "in_available_genes": true
+    },
+    "CDK9": {
+      "n_samples": 47,
+      "n_hairpins": 10,
+      "in_available_genes": true
+    },
+    "MAP2K1": {
+      "n_samples": 72,
+      "n_hairpins": 5,
+      "in_available_genes": true
+    }
+  },
+  "targets": {
+    "AKT1": {
+      "n_samples": 217,
+      "n_hairpins": 12,
+      "n_cells": 15,
+      "n_sig": 78,
+      "n_up": 24,
+      "n_down": 50,
+      "loho_jaccard_min": 0.45098039215686275,
+      "grade": "yellow",
+      "rule_version": "4.5",
+      "n_excluded_nan_genes": 0,
+      "target_median_z": -4.061132431030273,
+      "auroc_self": 0.7449139280125195,
+      "gold_found": [
+        "mk-2206",
+        "triciribine"
+      ],
+      "gold_missing": [
+        "azd5363",
+        "gdc-0068",
+        "perifosine"
+      ],
+      "gold_best_rank": 1764,
+      "gold_ranks": [
+        1764,
+        8345
+      ],
+      "gold_top50_hits": 0,
+      "frac_drugs_fdr_reversal_lt_0.05": 0.06920397758820857
+    },
+    "CDK9": {
+      "n_samples": 47,
+      "n_hairpins": 10,
+      "n_cells": 9,
+      "n_sig": 0,
+      "n_up": 0,
+      "n_down": 0,
+      "loho_jaccard_min": 0.3333333333333333,
+      "grade": "red",
+      "rule_version": "4.5",
+      "n_excluded_nan_genes": 0,
+      "target_median_z": null,
+      "auroc_self": 0.5,
+      "gold_found": [
+        "alvocidib",
+        "bms-387032"
+      ],
+      "gold_missing": [
+        "dinaciclib",
+        "atuveciclib"
+      ],
+      "gold_best_rank": 1,
+      "gold_ranks": [
+        1,
+        1
+      ],
+      "gold_top50_hits": 2,
+      "frac_drugs_fdr_reversal_lt_0.05": 0.0
+    },
+    "MAP2K1": {
+      "n_samples": 72,
+      "n_hairpins": 5,
+      "n_cells": 11,
+      "n_sig": 27,
+      "n_up": 11,
+      "n_down": 16,
+      "loho_jaccard_min": 0.2558139534883721,
+      "grade": "red",
+      "rule_version": "4.5",
+      "n_excluded_nan_genes": 0,
+      "target_median_z": null,
+      "auroc_self": 0.9729233979536888,
+      "gold_found": [
+        "gsk1120212",
+        "arry-142886",
+        "pd-0325901"
+      ],
+      "gold_missing": [
+        "cobimetinib",
+        "ci-1040",
+        "bay-86-9766",
+        "arry-162"
+      ],
+      "gold_best_rank": 270,
+      "gold_ranks": [
+        270,
+        576,
+        769
+      ],
+      "gold_top50_hits": 0,
+      "frac_drugs_fdr_reversal_lt_0.05": 0.0
+    }
+  },
+  "negative_control": {
+    "n_random_signatures": 20,
+    "sig_size": [
+      50,
+      50
+    ],
+    "null_M": 10000,
+    "seed": 42,
+    "frac_drugs_fdr_lt_0.05_per_sig": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "max_frac": 0.0,
+    "mean_frac": 0.0,
+    "pass_lt_1pct": true,
+    "grades_current_rule": [
+      "red",
+      "red",
+      "red",
+      "red",
+      "red",
+      "red",
+      "red",
+      "red",
+      "red",
+      "red",
+      "red",
+      "red",
+      "red",
+      "red",
+      "red",
+      "red",
+      "red",
+      "red",
+      "red",
+      "red"
+    ],
+    "all_red": true,
+    "rule_version": "4.5"
+  },
+  "elapsed_s": 1850.2
+}

@@ -1,0 +1,112 @@
+{
+  "side": "l3",
+  "shard": "5/11",
+  "params": {
+    "ALGO_VERSION": "2",
+    "DATA_PROVIDER": "l3",
+    "KS_THRESHOLD": 0.2,
+    "FDR_THRESHOLD": 0.001,
+    "BOOTSTRAP_N": 100000,
+    "RANDOM_SEED": 42,
+    "FAST_MODE_TOP_N": 0,
+    "MAX_GENES_PER_DIRECTION": 50,
+    "DRUG_NULL_N": 10000
+  },
+  "grading_thresholds": {
+    "RULE_VERSION": "4.5",
+    "SUITABILITY_MIN_SIG": 5,
+    "SUITABILITY_YELLOW_MIN_SIG": 20,
+    "SUITABILITY_JACCARD_GREEN": 0.5,
+    "SUITABILITY_JACCARD_RED": 0.3
+  },
+  "n_drugs": 19811,
+  "coverage": {
+    "CDK4": {
+      "n_samples": 210,
+      "n_hairpins": 11,
+      "in_available_genes": true
+    },
+    "MTOR": {
+      "n_samples": 455,
+      "n_hairpins": 18,
+      "in_available_genes": true
+    }
+  },
+  "targets": {
+    "CDK4": {
+      "n_samples": 210,
+      "n_hairpins": 11,
+      "n_cells": 11,
+      "n_sig": 101,
+      "n_up": 38,
+      "n_down": 50,
+      "loho_jaccard_min": 0.6761904761904762,
+      "grade": "green",
+      "rule_version": "4.5",
+      "n_excluded_nan_genes": 250,
+      "target_median_z": -4.544839859008789,
+      "auroc_self": 0.8186759558427571,
+      "gold_found": [
+        "palbociclib",
+        "alvocidib",
+        "cyc202"
+      ],
+      "gold_missing": [
+        "lee011",
+        "abemaciclib",
+        "dinaciclib"
+      ],
+      "gold_best_rank": 121,
+      "gold_ranks": [
+        121,
+        386,
+        10274
+      ],
+      "gold_top50_hits": 0,
+      "frac_drugs_fdr_reversal_lt_0.05": 0.09701680884357175
+    },
+    "MTOR": {
+      "n_samples": 455,
+      "n_hairpins": 18,
+      "n_cells": 12,
+      "n_sig": 31,
+      "n_up": 11,
+      "n_down": 20,
+      "loho_jaccard_min": 0.5897435897435898,
+      "grade": "green",
+      "rule_version": "4.5",
+      "n_excluded_nan_genes": 250,
+      "target_median_z": null,
+      "auroc_self": 0.9563954956319749,
+      "gold_found": [
+        "rapamycin",
+        "everolimus",
+        "temsirolimus",
+        "torin-1",
+        "torin-2",
+        "bez235",
+        "pi-103",
+        "wortmannin"
+      ],
+      "gold_missing": [
+        "azd8055",
+        "ly294002"
+      ],
+      "gold_best_rank": 14,
+      "gold_ranks": [
+        14,
+        21,
+        41,
+        99,
+        114,
+        258,
+        337,
+        6060
+      ],
+      "gold_top50_hits": 3,
+      "frac_drugs_fdr_reversal_lt_0.05": 0.0
+    }
+  },
+  "negative_control": {},
+  "elapsed_s": 3781.9
+}

@@ -1,0 +1,66 @@
+{
+  "side": "l3",
+  "shard": "10/11",
+  "params": {
+    "ALGO_VERSION": "2",
+    "DATA_PROVIDER": "l3",
+    "KS_THRESHOLD": 0.2,
+    "FDR_THRESHOLD": 0.001,
+    "BOOTSTRAP_N": 100000,
+    "RANDOM_SEED": 42,
+    "FAST_MODE_TOP_N": 0,
+    "MAX_GENES_PER_DIRECTION": 50,
+    "DRUG_NULL_N": 10000
+  },
+  "grading_thresholds": {
+    "RULE_VERSION": "4.5",
+    "SUITABILITY_MIN_SIG": 5,
+    "SUITABILITY_YELLOW_MIN_SIG": 20,
+    "SUITABILITY_JACCARD_GREEN": 0.5,
+    "SUITABILITY_JACCARD_RED": 0.3
+  },
+  "n_drugs": 19811,
+  "coverage": {
+    "FGFR1": {
+      "n_samples": 129,
+      "n_hairpins": 12,
+      "in_available_genes": true
+    }
+  },
+  "targets": {
+    "FGFR1": {
+      "n_samples": 129,
+      "n_hairpins": 12,
+      "n_cells": 9,
+      "n_sig": 16,
+      "n_up": 5,
+      "n_down": 11,
+      "loho_jaccard_min": 0.3333333333333333,
+      "grade": "red",
+      "rule_version": "4.5",
+      "n_excluded_nan_genes": 250,
+      "target_median_z": null,
+      "auroc_self": 0.5951052658151159,
+      "gold_found": [
+        "ap24534",
+        "bgj398",
+        "pd-173074",
+        "chir-258"
+      ],
+      "gold_missing": [
+        "azd4547"
+      ],
+      "gold_best_rank": 5358,
+      "gold_ranks": [
+        5358,
+        5673,
+        9633,
+        11425
+      ],
+      "gold_top50_hits": 0,
+      "frac_drugs_fdr_reversal_lt_0.05": 0.0
+    }
+  },
+  "negative_control": {},
+  "elapsed_s": 844.8
+}
