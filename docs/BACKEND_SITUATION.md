@@ -569,7 +569,7 @@ v2 TP53 药物缓存实测：`all_scores` 19,811 条，文件 5,227,185 B。
 | `GENE_ANNOTATIONS_PATH` | `DATA_DIR/gene_annotations.tsv` | `config.py:66-68` | D4 注释表 |
 | `SUITABILITY_MIN_HAIRPINS` | 2 | `config.py:71` | 判档/计算门槛 |
 | `SUITABILITY_MIN_SIG` | 5 | `config.py:72` | 绿档最低 n_sig |
-| `SUITABILITY_YELLOW_MIN_SIG` | 20 | `config.py:73` | 黄档最低 n_sig |
+| `SUITABILITY_YELLOW_MIN_SIG` | 5（L7f 起，原 20） | `config.py:73` | 黄档最低 n_sig |
 | `SUITABILITY_JACCARD_GREEN` | 0.5 | `config.py:74` | 绿档 LOHO 下限 |
 | `SUITABILITY_JACCARD_RED` | 0.3 | `config.py:75` | 红档 LOHO 上限 |
 | `LOHO_MIN_REMAINING` | 3 | `config.py:77` | 留一后最少剩余样本 |

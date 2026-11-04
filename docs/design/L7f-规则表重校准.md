@@ -331,3 +331,50 @@ PYTHONIOENCODING=utf-8 D:/mine_Anaconda3/python.exe -I \
 6. **CDK6 AUROC 仅 1 个正例**（palbociclib）：统计意义弱，仅作参考。
 7. L3 侧 250 个基因全局剔除（L7e 已知代价，含 HIF1A/DNMT1 等）继续生效，
    所有 L3 签名一致缺这些基因。
+
+## 11. 阶段2 实施记录（2026-11-04）
+
+### 11.1 拍板结果
+
+- **D-a/D-b：方案 A**——黄档核心条件改为 `n_sig ≥ 5 且 0.3 ≤ LOHO < 0.5`，
+  绿/红线、注释层、D1 防线不动，RULE_VERSION 4.5→4.6。
+- **D-c**：升黄者（原空隙区成员）采用 §8 草案文案；废弃 4.5 的
+  「未满足绿档或黄档条件」。
+- **D-d**：一套规则两口径（L3/L5）共用，不设分口径阈值。
+- **TP53/MYC**：接受现状判档（L3 口径下绿），"不可成药"语义由注释层
+  另开任务承载，不在本阶段。
+
+### 11.2 代码改动（branch fix/L7f-grading-recal）
+
+| 文件 | 改动 |
+|---|---|
+| `backend/config.py` | `SUITABILITY_YELLOW_MIN_SIG` 默认值 20→5（注释注明依据） |
+| `backend/suitability.py` | `RULE_VERSION="4.6"`；模块 docstring 档位表同步；`grade()` 内 `yellow_min_sig` 回退默认 20→5；黄档文案按 `n_sig < 20`（新增模块常量 `_LEGACY_YELLOW_MIN_SIG`）分两支：升黄者给「命中信心低于典型黄档…补一种正交证据」谨慎文案，常规黄档保留原文案；末尾 else 文案重写为「签名稳定性不足…」（默认阈值下不可达，仅环境变量调高黄档下限时可及） |
+| `backend/tests/test_suitability.py` | 边界表更新（(5,0.499)、(19,0.40) 红→黄，新增 (5,0.30)、(18,0.385)=EGFR-L3 实测点）；新增 L7f 专节 7 个测试：版本断言、升黄者文案、常规黄档文案、LOHO=None 恒红、n_sig/LOHO 双维单调性网格断言（41×21）、4.6 对 4.5 全网格无降档（monkeypatch 对比）、TP53/MYC/LMNA 现状判档锁定 |
+| `backend/tests/test_integrity.py` | rule_version 断言 4.5→4.6（3 处） |
+| `docs/BACKEND_SITUATION.md`、`docs/SYSTEM_HANDOFF.md` | 阈值默认值文档同步（5，注明原 20） |
+
+### 11.3 测试结果（两遍，服务器 base conda Python 3.13 + pytest 9.0.2）
+
+| 遍 | 夹具 | 结果 |
+|---|---|---|
+| 1 | mini（仓库内置，默认） | **190 passed, 1 skipped, 0 failed**（29.2s） |
+| 2 | 完整夹具（`LMNA_FIXTURE_DIR=/home/keji/l3_tmp/fixtures_l0`，npz md5 与本地 `deliveries/task-L0/fixtures` 一致） | **190 passed, 1 skipped, 0 failed**（31.8s） |
+
+- 基线 181 → 190：+9 = 7 个 L7f 新测试 + 2 行新边界参数；既有测试零倒退。
+- 唯一 skip 为既有项（D3 缺论文 Table S1），与本任务无关。
+- 测试部署点：`/home/keji/l3_tmp/l7f_stage2/`（backend+frontend 同步自本分支）；
+  生产服务（8001/8003/8004/8007/8084/8085/8086）未触碰，未部署、未重启。
+
+### 11.4 行为变化汇总
+
+- 判档变化**只发生在原空隙区**（n_sig∈[5,20) 且 LOHO∈[0.3,0.5)）：红→黄。
+  按 §4 面板实测，受影响的是 L3 侧 6 靶点（EGFR、HDAC1、ALK、FGFR1、CDK2、
+  PIK3CA）与 L5 侧 2 靶点（PLK1、MET）；其余 34 个靶点-侧判档不变
+  （单调性网格 + 无降档网格单测双重保证）。
+- 升黄者的理由文案带「命中信心低于典型黄档」警示（D-c），常规黄档文案不变。
+- 注释层、D1 自身-KS 防线、数据前置门槛、fast_mode 否决、LOHO=None 防线
+  全部原样。
+- **部署注意（留给后续部署任务）**：已缓存签名的 `qc` 记录的是计算时刻的
+  4.5 判档（含 rule_version 字段）；4.6 上线后旧缓存不会自动重判，
+  部署时应清理签名缓存或接受新旧档位并存的过渡期。

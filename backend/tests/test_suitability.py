@@ -94,8 +94,11 @@ def _make_sig(n_sig=10, loho=0.6, fast=False):
         (5, 0.50, False, True, "green"),   # 绿档下边界
         (20, 0.50, False, True, "green"),  # 绿档
         (4, 0.90, False, True, "red"),     # n_sig < 5
-        (5, 0.499, False, True, "red"),    # 未达绿档且 n_sig < 20，不满足黄档
-        (19, 0.40, False, True, "red"),    # 黄档要求 n_sig >= 20
+        # L7f（4.6）：黄档 n_sig 下限 20→5，原空隙区 [5,20)×[0.3,0.5) 升黄
+        (5, 0.499, False, True, "yellow"), # 黄档下边界（n_sig 侧）
+        (5, 0.30, False, True, "yellow"),  # 黄档两个下边界同时踩线
+        (18, 0.385, False, True, "yellow"),# EGFR-L3 实测空隙区点 → 升黄
+        (19, 0.40, False, True, "yellow"), # 原 4.5 空隙区上缘
         (20, 0.30, False, True, "yellow"), # 黄档下边界
         (20, 0.499, False, True, "yellow"),# 黄档上边界（不含 0.5）
         (20, 0.299, False, True, "red"),   # Jaccard < 0.3
@@ -113,6 +116,97 @@ def test_grade_boundaries(n_sig, loho, fast, data_gate_ok, expected):
     assert result["n_sig"] == n_sig
     assert result["loho_jaccard_min"] == loho
     assert result["reasons"]
+
+
+# ---------------------------------------------------------------------------
+# L7f（RULE_VERSION 4.6）：黄档 n_sig 下限 20→5，空隙区修复
+# 依据：docs/design/L7f-规则表重校准.md（21 靶点面板重校准，用户拍板方案 A）
+# ---------------------------------------------------------------------------
+
+_GRADE_RANK = {"red": 0, "yellow": 1, "green": 2}
+
+
+def test_rule_version_is_46():
+    assert suitability.RULE_VERSION == "4.6"
+    assert config.SUITABILITY_YELLOW_MIN_SIG == 5
+    result = grade(_make_sig(n_sig=10, loho=0.4), _make_pre())
+    assert result["rule_version"] == "4.6"
+
+
+def test_gap_zone_promoted_gets_cautious_wording():
+    # 原空隙区成员（n_sig < 20）升黄后给"命中信心低于典型黄档"的谨慎文案
+    result = grade(_make_sig(n_sig=18, loho=0.385), _make_pre())
+    assert result["grade"] == "yellow"
+    text = "\n".join(result["reasons"])
+    assert "命中信心低于典型黄档" in text
+    assert "正交证据" in text
+    assert "未满足绿档" not in text  # 4.5 的空隙区措辞已废弃
+
+
+def test_regular_yellow_keeps_standard_wording():
+    # n_sig >= 20 的黄档维持原文案，不带升黄者警示
+    result = grade(_make_sig(n_sig=25, loho=0.40), _make_pre())
+    assert result["grade"] == "yellow"
+    text = "\n".join(result["reasons"])
+    assert "建议再补一种证据" in text
+    assert "命中信心低于典型黄档" not in text
+
+
+def test_loho_none_stays_red_under_46():
+    # 随机签名/单 hairpin 等算不出 LOHO 的情形：任何候选规则下都必须红
+    for n_sig in (5, 18, 30, 100):
+        result = grade(_make_sig(n_sig=n_sig, loho=None), _make_pre())
+        assert result["grade"] == "red"
+        assert any("LOHO" in r or "留一" in r for r in result["reasons"])
+
+
+def test_monotonicity_grid_under_46():
+    # 固定 LOHO 增大 n_sig 不得降档；固定 n_sig 增大 LOHO 不得降档
+    lohos = [None] + [x / 100 for x in range(0, 101, 5)]
+    n_sigs = list(range(0, 41))
+    for loho in lohos:
+        ranks = [
+            _GRADE_RANK[
+                grade(_make_sig(n_sig=n, loho=loho), _make_pre())["grade"]
+            ]
+            for n in n_sigs
+        ]
+        assert ranks == sorted(ranks), f"loho={loho} 时 n_sig 单调性被破坏"
+    for n in n_sigs:
+        ranks = [
+            _GRADE_RANK[
+                grade(_make_sig(n_sig=n, loho=loho), _make_pre())["grade"]
+            ]
+            for loho in lohos[1:]
+        ]
+        assert ranks == sorted(ranks), f"n_sig={n} 时 LOHO 单调性被破坏"
+
+
+def test_46_never_downgrades_vs_45(monkeypatch):
+    # 同一签名在 4.5（yellow_min_sig=20）与 4.6（=5）下判档，4.6 不得更严
+    lohos = [None] + [x / 100 for x in range(0, 101, 5)]
+    for n_sig in range(0, 41):
+        for loho in lohos:
+            sig, pre = _make_sig(n_sig=n_sig, loho=loho), _make_pre()
+            monkeypatch.setattr(config, "SUITABILITY_YELLOW_MIN_SIG", 20)
+            old = grade(sig, pre)["grade"]
+            monkeypatch.setattr(config, "SUITABILITY_YELLOW_MIN_SIG", 5)
+            new = grade(sig, pre)["grade"]
+            assert _GRADE_RANK[new] >= _GRADE_RANK[old], (
+                f"n_sig={n_sig}, loho={loho}: 4.6={new} 比 4.5={old} 更严"
+            )
+
+
+def test_tp53_myc_like_signatures_keep_current_grades():
+    # 用户拍板（L7f 阶段2）：TP53/MYC 在 L3 口径下的现状判档予以接受，
+    # "不可成药"语义由注释层另开任务承载，不在稳定性规则内处理。
+    # 数值取自 L7f 面板实测（docs/design/L7f-规则表重校准.md §4）。
+    tp53 = grade(_make_sig(n_sig=79, loho=0.510), _make_pre())
+    myc = grade(_make_sig(n_sig=58, loho=0.785), _make_pre())
+    lmna = grade(_make_sig(n_sig=51, loho=0.397), _make_pre())
+    assert tp53["grade"] == "green"
+    assert myc["grade"] == "green"
+    assert lmna["grade"] == "yellow"
 
 
 def test_grade_reference_is_display_only():

@@ -105,9 +105,12 @@ GENE_ANNOTATIONS_PATH = os.getenv(
 )
 
 # 判档阈值（报告 4.4 修订版；做成环境变量便于后续校准）
+# L7f（RULE_VERSION 4.6）：黄档 n_sig 下限 20→5，修复 L3 口径下
+# n_sig∈[5,20) 且 LOHO∈[0.3,0.5) 落入"空隙区"误判红档的问题
+# （依据：docs/design/L7f-规则表重校准.md，21 靶点面板重校准，方案 A）
 SUITABILITY_MIN_HAIRPINS = int(os.getenv("SUITABILITY_MIN_HAIRPINS", "2"))
 SUITABILITY_MIN_SIG = int(os.getenv("SUITABILITY_MIN_SIG", "5"))
-SUITABILITY_YELLOW_MIN_SIG = int(os.getenv("SUITABILITY_YELLOW_MIN_SIG", "20"))
+SUITABILITY_YELLOW_MIN_SIG = int(os.getenv("SUITABILITY_YELLOW_MIN_SIG", "5"))
 SUITABILITY_JACCARD_GREEN = float(os.getenv("SUITABILITY_JACCARD_GREEN", "0.5"))
 SUITABILITY_JACCARD_RED = float(os.getenv("SUITABILITY_JACCARD_RED", "0.3"))
 # 去掉一条 hairpin 后至少剩余的样本数；少于该值则跳过该 hairpin
