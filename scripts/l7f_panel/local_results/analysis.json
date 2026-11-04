@@ -1,0 +1,1165 @@
+{
+  "monotonicity": {
+    "current": true,
+    "A": true,
+    "B35": true,
+    "B40": true,
+    "B45": true,
+    "C": true
+  },
+  "params_l3": {
+    "ALGO_VERSION": "2",
+    "DATA_PROVIDER": "l3",
+    "KS_THRESHOLD": 0.2,
+    "FDR_THRESHOLD": 0.001,
+    "BOOTSTRAP_N": 100000,
+    "RANDOM_SEED": 42,
+    "FAST_MODE_TOP_N": 0,
+    "MAX_GENES_PER_DIRECTION": 50,
+    "DRUG_NULL_N": 10000
+  },
+  "params_l5": {
+    "ALGO_VERSION": "2",
+    "DATA_PROVIDER": "l5",
+    "KS_THRESHOLD": 0.2,
+    "FDR_THRESHOLD": 0.001,
+    "BOOTSTRAP_N": 100000,
+    "RANDOM_SEED": 42,
+    "FAST_MODE_TOP_N": 0,
+    "MAX_GENES_PER_DIRECTION": 50,
+    "DRUG_NULL_N": 10000
+  },
+  "thresholds": {
+    "RULE_VERSION": "4.5",
+    "SUITABILITY_MIN_SIG": 5,
+    "SUITABILITY_YELLOW_MIN_SIG": 20,
+    "SUITABILITY_JACCARD_GREEN": 0.5,
+    "SUITABILITY_JACCARD_RED": 0.3
+  },
+  "sides": {
+    "l3": {
+      "neg_ctrl": {
+        "n_random_signatures": 20,
+        "sig_size": [
+          50,
+          50
+        ],
+        "null_M": 10000,
+        "seed": 42,
+        "frac_drugs_fdr_lt_0.05_per_sig": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "max_frac": 0.0,
+        "mean_frac": 0.0,
+        "pass_lt_1pct": true,
+        "grades_current_rule": [
+          "red",
+          "red",
+          "red",
+          "red",
+          "red",
+          "red",
+          "red",
+          "red",
+          "red",
+          "red",
+          "red",
+          "red",
+          "red",
+          "red",
+          "red",
+          "red",
+          "red",
+          "red",
+          "red",
+          "red"
+        ],
+        "all_red": true,
+        "rule_version": "4.5"
+      },
+      "per_scheme": {
+        "current": {
+          "grades": {
+            "AKT1": "green",
+            "HDAC1": "red",
+            "ALK": "red",
+            "JAK2": "yellow",
+            "FGFR1": "red",
+            "AURKA": "green",
+            "LMNA": "yellow",
+            "BRAF": "green",
+            "MAP2K1": "red",
+            "CDK2": "red",
+            "MET": "red",
+            "CDK4": "green",
+            "MTOR": "green",
+            "CDK6": "green",
+            "MYC": "green",
+            "CDK9": "yellow",
+            "PIK3CA": "red",
+            "EGFR": "red",
+            "PLK1": "green",
+            "ERBB2": "yellow",
+            "TP53": "green"
+          },
+          "dist": {
+            "red": 8,
+            "yellow": 4,
+            "green": 9
+          },
+          "gap_targets": [
+            "ALK",
+            "CDK2",
+            "EGFR",
+            "FGFR1",
+            "HDAC1",
+            "PIK3CA"
+          ],
+          "gap_aurocs": {
+            "ALK": 0.7877732343884093,
+            "CDK2": 0.36965520722903733,
+            "EGFR": 0.6904232937810317,
+            "FGFR1": 0.5951052658151159,
+            "HDAC1": 0.8901448480826384,
+            "PIK3CA": 0.31044128042007474
+          },
+          "auroc_mean_by_grade": {
+            "green": 0.8458764723217563,
+            "red": 0.6491146400029068,
+            "yellow": 0.46104499057813403
+          },
+          "spearman_grade_auroc": 0.336649235679797,
+          "difficulty_still_red": false,
+          "difficulty_grades": {
+            "TP53": "green",
+            "MYC": "green",
+            "LMNA": "yellow"
+          }
+        },
+        "A": {
+          "grades": {
+            "AKT1": "green",
+            "HDAC1": "yellow",
+            "ALK": "yellow",
+            "JAK2": "yellow",
+            "FGFR1": "yellow",
+            "AURKA": "green",
+            "LMNA": "yellow",
+            "BRAF": "green",
+            "MAP2K1": "red",
+            "CDK2": "yellow",
+            "MET": "red",
+            "CDK4": "green",
+            "MTOR": "green",
+            "CDK6": "green",
+            "MYC": "green",
+            "CDK9": "yellow",
+            "PIK3CA": "yellow",
+            "EGFR": "yellow",
+            "PLK1": "green",
+            "ERBB2": "yellow",
+            "TP53": "green"
+          },
+          "dist": {
+            "red": 2,
+            "yellow": 10,
+            "green": 9
+          },
+          "gap_targets": [
+            "ALK",
+            "CDK2",
+            "EGFR",
+            "FGFR1",
+            "HDAC1",
+            "PIK3CA"
+          ],
+          "gap_aurocs": {
+            "ALK": 0.7877732343884093,
+            "CDK2": 0.36965520722903733,
+            "EGFR": 0.6904232937810317,
+            "FGFR1": 0.5951052658151159,
+            "HDAC1": 0.8901448480826384,
+            "PIK3CA": 0.31044128042007474
+          },
+          "auroc_mean_by_grade": {
+            "green": 0.8458764723217563,
+            "yellow": 0.5585197890500788,
+            "red": 0.7746869951534734
+          },
+          "spearman_grade_auroc": 0.37897765518392645,
+          "difficulty_still_red": false,
+          "difficulty_grades": {
+            "TP53": "green",
+            "MYC": "green",
+            "LMNA": "yellow"
+          }
+        },
+        "B35": {
+          "grades": {
+            "AKT1": "green",
+            "HDAC1": "red",
+            "ALK": "red",
+            "JAK2": "yellow",
+            "FGFR1": "red",
+            "AURKA": "green",
+            "LMNA": "yellow",
+            "BRAF": "green",
+            "MAP2K1": "red",
+            "CDK2": "yellow",
+            "MET": "red",
+            "CDK4": "green",
+            "MTOR": "green",
+            "CDK6": "green",
+            "MYC": "green",
+            "CDK9": "yellow",
+            "PIK3CA": "yellow",
+            "EGFR": "yellow",
+            "PLK1": "green",
+            "ERBB2": "yellow",
+            "TP53": "green"
+          },
+          "dist": {
+            "red": 5,
+            "yellow": 7,
+            "green": 9
+          },
+          "gap_targets": [
+            "ALK",
+            "CDK2",
+            "EGFR",
+            "FGFR1",
+            "HDAC1",
+            "PIK3CA"
+          ],
+          "gap_aurocs": {
+            "ALK": 0.7877732343884093,
+            "CDK2": 0.36965520722903733,
+            "EGFR": 0.6904232937810317,
+            "FGFR1": 0.5951052658151159,
+            "HDAC1": 0.8901448480826384,
+            "PIK3CA": 0.31044128042007474
+          },
+          "auroc_mean_by_grade": {
+            "green": 0.8458764723217563,
+            "red": 0.7644794677186221,
+            "yellow": 0.45894245886075763
+          },
+          "spearman_grade_auroc": 0.23250394624142906,
+          "difficulty_still_red": false,
+          "difficulty_grades": {
+            "TP53": "green",
+            "MYC": "green",
+            "LMNA": "yellow"
+          }
+        },
+        "B40": {
+          "grades": {
+            "AKT1": "green",
+            "HDAC1": "red",
+            "ALK": "red",
+            "JAK2": "yellow",
+            "FGFR1": "red",
+            "AURKA": "green",
+            "LMNA": "yellow",
+            "BRAF": "green",
+            "MAP2K1": "red",
+            "CDK2": "yellow",
+            "MET": "red",
+            "CDK4": "green",
+            "MTOR": "green",
+            "CDK6": "green",
+            "MYC": "green",
+            "CDK9": "yellow",
+            "PIK3CA": "yellow",
+            "EGFR": "red",
+            "PLK1": "green",
+            "ERBB2": "yellow",
+            "TP53": "green"
+          },
+          "dist": {
+            "red": 6,
+            "yellow": 6,
+            "green": 9
+          },
+          "gap_targets": [
+            "ALK",
+            "CDK2",
+            "EGFR",
+            "FGFR1",
+            "HDAC1",
+            "PIK3CA"
+          ],
+          "gap_aurocs": {
+            "ALK": 0.7877732343884093,
+            "CDK2": 0.36965520722903733,
+            "EGFR": 0.6904232937810317,
+            "FGFR1": 0.5951052658151159,
+            "HDAC1": 0.8901448480826384,
+            "PIK3CA": 0.31044128042007474
+          },
+          "auroc_mean_by_grade": {
+            "green": 0.8458764723217563,
+            "red": 0.752136772062357,
+            "yellow": 0.4126462918767029
+          },
+          "spearman_grade_auroc": 0.2127630451454587,
+          "difficulty_still_red": false,
+          "difficulty_grades": {
+            "TP53": "green",
+            "MYC": "green",
+            "LMNA": "yellow"
+          }
+        },
+        "B45": {
+          "grades": {
+            "AKT1": "green",
+            "HDAC1": "red",
+            "ALK": "red",
+            "JAK2": "yellow",
+            "FGFR1": "red",
+            "AURKA": "green",
+            "LMNA": "yellow",
+            "BRAF": "green",
+            "MAP2K1": "red",
+            "CDK2": "red",
+            "MET": "red",
+            "CDK4": "green",
+            "MTOR": "green",
+            "CDK6": "green",
+            "MYC": "green",
+            "CDK9": "yellow",
+            "PIK3CA": "red",
+            "EGFR": "red",
+            "PLK1": "green",
+            "ERBB2": "yellow",
+            "TP53": "green"
+          },
+          "dist": {
+            "red": 8,
+            "yellow": 4,
+            "green": 9
+          },
+          "gap_targets": [
+            "ALK",
+            "CDK2",
+            "EGFR",
+            "FGFR1",
+            "HDAC1",
+            "PIK3CA"
+          ],
+          "gap_aurocs": {
+            "ALK": 0.7877732343884093,
+            "CDK2": 0.36965520722903733,
+            "EGFR": 0.6904232937810317,
+            "FGFR1": 0.5951052658151159,
+            "HDAC1": 0.8901448480826384,
+            "PIK3CA": 0.31044128042007474
+          },
+          "auroc_mean_by_grade": {
+            "green": 0.8458764723217563,
+            "red": 0.6491146400029068,
+            "yellow": 0.46104499057813403
+          },
+          "spearman_grade_auroc": 0.336649235679797,
+          "difficulty_still_red": false,
+          "difficulty_grades": {
+            "TP53": "green",
+            "MYC": "green",
+            "LMNA": "yellow"
+          }
+        },
+        "C": {
+          "grades": {
+            "AKT1": "green",
+            "HDAC1": "red",
+            "ALK": "red",
+            "JAK2": "yellow",
+            "FGFR1": "yellow",
+            "AURKA": "green",
+            "LMNA": "yellow",
+            "BRAF": "green",
+            "MAP2K1": "red",
+            "CDK2": "red",
+            "MET": "red",
+            "CDK4": "green",
+            "MTOR": "green",
+            "CDK6": "green",
+            "MYC": "green",
+            "CDK9": "yellow",
+            "PIK3CA": "yellow",
+            "EGFR": "yellow",
+            "PLK1": "green",
+            "ERBB2": "yellow",
+            "TP53": "green"
+          },
+          "dist": {
+            "red": 5,
+            "yellow": 7,
+            "green": 9
+          },
+          "gap_targets": [
+            "ALK",
+            "CDK2",
+            "EGFR",
+            "FGFR1",
+            "HDAC1",
+            "PIK3CA"
+          ],
+          "gap_aurocs": {
+            "ALK": 0.7877732343884093,
+            "CDK2": 0.36965520722903733,
+            "EGFR": 0.6904232937810317,
+            "FGFR1": 0.5951052658151159,
+            "HDAC1": 0.8901448480826384,
+            "PIK3CA": 0.31044128042007474
+          },
+          "auroc_mean_by_grade": {
+            "green": 0.8458764723217563,
+            "red": 0.7193894560014064,
+            "yellow": 0.4965174686251041
+          },
+          "spearman_grade_auroc": 0.28075948225380115,
+          "difficulty_still_red": false,
+          "difficulty_grades": {
+            "TP53": "green",
+            "MYC": "green",
+            "LMNA": "yellow"
+          }
+        }
+      },
+      "tuples": {
+        "AKT1": {
+          "n_sig": 43,
+          "loho": 0.5636363636363636,
+          "auroc": 0.7833055681760815,
+          "grade45": "green",
+          "n_samples": 615,
+          "n_hairpins": 12
+        },
+        "HDAC1": {
+          "n_sig": 10,
+          "loho": 0.3333333333333333,
+          "auroc": 0.8901448480826384,
+          "grade45": "red",
+          "n_samples": 367,
+          "n_hairpins": 12
+        },
+        "ALK": {
+          "n_sig": 10,
+          "loho": 0.3333333333333333,
+          "auroc": 0.7877732343884093,
+          "grade45": "red",
+          "n_samples": 111,
+          "n_hairpins": 9
+        },
+        "JAK2": {
+          "n_sig": 26,
+          "loho": 0.4444444444444444,
+          "auroc": 0.5860090199246096,
+          "grade45": "yellow",
+          "n_samples": 144,
+          "n_hairpins": 11
+        },
+        "FGFR1": {
+          "n_sig": 16,
+          "loho": 0.3333333333333333,
+          "auroc": 0.5951052658151159,
+          "grade45": "red",
+          "n_samples": 129,
+          "n_hairpins": 12
+        },
+        "AURKA": {
+          "n_sig": 53,
+          "loho": 0.65625,
+          "auroc": 0.8222850507396375,
+          "grade45": "green",
+          "n_samples": 417,
+          "n_hairpins": 9
+        },
+        "LMNA": {
+          "n_sig": 51,
+          "loho": 0.3972602739726027,
+          "auroc": null,
+          "grade45": "yellow",
+          "n_samples": 93,
+          "n_hairpins": 3
+        },
+        "BRAF": {
+          "n_sig": 24,
+          "loho": 0.6551724137931034,
+          "auroc": 0.6877542776351098,
+          "grade45": "green",
+          "n_samples": 689,
+          "n_hairpins": 14
+        },
+        "MAP2K1": {
+          "n_sig": 29,
+          "loho": 0.20833333333333334,
+          "auroc": 0.9910305600430802,
+          "grade45": "red",
+          "n_samples": 196,
+          "n_hairpins": 5
+        },
+        "CDK2": {
+          "n_sig": 6,
+          "loho": 0.42857142857142855,
+          "auroc": 0.36965520722903733,
+          "grade45": "red",
+          "n_samples": 614,
+          "n_hairpins": 16
+        },
+        "MET": {
+          "n_sig": 1,
+          "loho": 0.5384615384615384,
+          "auroc": 0.5583434302638665,
+          "grade45": "red",
+          "n_samples": 826,
+          "n_hairpins": 17
+        },
+        "CDK4": {
+          "n_sig": 101,
+          "loho": 0.6761904761904762,
+          "auroc": 0.8186759558427571,
+          "grade45": "green",
+          "n_samples": 210,
+          "n_hairpins": 11
+        },
+        "MTOR": {
+          "n_sig": 31,
+          "loho": 0.5897435897435898,
+          "auroc": 0.9563954956319749,
+          "grade45": "green",
+          "n_samples": 455,
+          "n_hairpins": 18
+        },
+        "CDK6": {
+          "n_sig": 25,
+          "loho": 0.7241379310344828,
+          "auroc": 0.9901564866229177,
+          "grade45": "green",
+          "n_samples": 542,
+          "n_hairpins": 16
+        },
+        "MYC": {
+          "n_sig": 58,
+          "loho": 0.7846153846153846,
+          "auroc": null,
+          "grade45": "green",
+          "n_samples": 860,
+          "n_hairpins": 16
+        },
+        "CDK9": {
+          "n_sig": 35,
+          "loho": 0.4,
+          "auroc": 0.5077994850825382,
+          "grade45": "yellow",
+          "n_samples": 113,
+          "n_hairpins": 10
+        },
+        "PIK3CA": {
+          "n_sig": 9,
+          "loho": 0.42857142857142855,
+          "auroc": 0.31044128042007474,
+          "grade45": "red",
+          "n_samples": 286,
+          "n_hairpins": 11
+        },
+        "EGFR": {
+          "n_sig": 18,
+          "loho": 0.38461538461538464,
+          "auroc": 0.6904232937810317,
+          "grade45": "red",
+          "n_samples": 680,
+          "n_hairpins": 20
+        },
+        "PLK1": {
+          "n_sig": 38,
+          "loho": 0.52,
+          "auroc": 0.8625624716038165,
+          "grade45": "green",
+          "n_samples": 131,
+          "n_hairpins": 11
+        },
+        "ERBB2": {
+          "n_sig": 28,
+          "loho": 0.3023255813953488,
+          "auroc": 0.28932646672725437,
+          "grade45": "yellow",
+          "n_samples": 313,
+          "n_hairpins": 9
+        },
+        "TP53": {
+          "n_sig": 79,
+          "loho": 0.5098039215686274,
+          "auroc": null,
+          "grade45": "green",
+          "n_samples": 196,
+          "n_hairpins": 7
+        }
+      }
+    },
+    "l5": {
+      "neg_ctrl": {
+        "n_random_signatures": 20,
+        "sig_size": [
+          50,
+          50
+        ],
+        "null_M": 10000,
+        "seed": 42,
+        "frac_drugs_fdr_lt_0.05_per_sig": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "max_frac": 0.0,
+        "mean_frac": 0.0,
+        "pass_lt_1pct": true,
+        "grades_current_rule": [
+          "red",
+          "red",
+          "red",
+          "red",
+          "red",
+          "red",
+          "red",
+          "red",
+          "red",
+          "red",
+          "red",
+          "red",
+          "red",
+          "red",
+          "red",
+          "red",
+          "red",
+          "red",
+          "red",
+          "red"
+        ],
+        "all_red": true,
+        "rule_version": "4.5"
+      },
+      "per_scheme": {
+        "current": {
+          "grades": {
+            "AKT1": "yellow",
+            "CDK9": "red",
+            "MAP2K1": "red",
+            "ALK": "red",
+            "EGFR": "yellow",
+            "MET": "red",
+            "AURKA": "green",
+            "ERBB2": "yellow",
+            "MTOR": "yellow",
+            "BRAF": "green",
+            "FGFR1": "red",
+            "MYC": "yellow",
+            "CDK2": "yellow",
+            "HDAC1": "yellow",
+            "PIK3CA": "red",
+            "CDK4": "green",
+            "JAK2": "red",
+            "PLK1": "red",
+            "CDK6": "red",
+            "LMNA": "red",
+            "TP53": "yellow"
+          },
+          "dist": {
+            "red": 10,
+            "yellow": 8,
+            "green": 3
+          },
+          "gap_targets": [
+            "MET",
+            "PLK1"
+          ],
+          "gap_aurocs": {
+            "MET": 0.360359450726979,
+            "PLK1": 0.799409359382099
+          },
+          "auroc_mean_by_grade": {
+            "yellow": 0.6705389828108176,
+            "red": 0.5702991342291963,
+            "green": 0.7928571599296032
+          },
+          "spearman_grade_auroc": 0.38974787020799473,
+          "difficulty_still_red": false,
+          "difficulty_grades": {
+            "TP53": "yellow",
+            "MYC": "yellow",
+            "LMNA": "red"
+          }
+        },
+        "A": {
+          "grades": {
+            "AKT1": "yellow",
+            "CDK9": "red",
+            "MAP2K1": "red",
+            "ALK": "red",
+            "EGFR": "yellow",
+            "MET": "yellow",
+            "AURKA": "green",
+            "ERBB2": "yellow",
+            "MTOR": "yellow",
+            "BRAF": "green",
+            "FGFR1": "red",
+            "MYC": "yellow",
+            "CDK2": "yellow",
+            "HDAC1": "yellow",
+            "PIK3CA": "red",
+            "CDK4": "green",
+            "JAK2": "red",
+            "PLK1": "yellow",
+            "CDK6": "red",
+            "LMNA": "red",
+            "TP53": "yellow"
+          },
+          "dist": {
+            "red": 8,
+            "yellow": 10,
+            "green": 3
+          },
+          "gap_targets": [
+            "MET",
+            "PLK1"
+          ],
+          "gap_aurocs": {
+            "MET": 0.360359450726979,
+            "PLK1": 0.799409359382099
+          },
+          "auroc_mean_by_grade": {
+            "yellow": 0.6478753383717479,
+            "red": 0.5675604854219556,
+            "green": 0.7928571599296032
+          },
+          "spearman_grade_auroc": 0.3485948880160812,
+          "difficulty_still_red": false,
+          "difficulty_grades": {
+            "TP53": "yellow",
+            "MYC": "yellow",
+            "LMNA": "red"
+          }
+        },
+        "B35": {
+          "grades": {
+            "AKT1": "yellow",
+            "CDK9": "red",
+            "MAP2K1": "red",
+            "ALK": "red",
+            "EGFR": "yellow",
+            "MET": "yellow",
+            "AURKA": "green",
+            "ERBB2": "yellow",
+            "MTOR": "yellow",
+            "BRAF": "green",
+            "FGFR1": "red",
+            "MYC": "yellow",
+            "CDK2": "yellow",
+            "HDAC1": "yellow",
+            "PIK3CA": "red",
+            "CDK4": "green",
+            "JAK2": "red",
+            "PLK1": "yellow",
+            "CDK6": "red",
+            "LMNA": "red",
+            "TP53": "yellow"
+          },
+          "dist": {
+            "red": 8,
+            "yellow": 10,
+            "green": 3
+          },
+          "gap_targets": [
+            "MET",
+            "PLK1"
+          ],
+          "gap_aurocs": {
+            "MET": 0.360359450726979,
+            "PLK1": 0.799409359382099
+          },
+          "auroc_mean_by_grade": {
+            "yellow": 0.6478753383717479,
+            "red": 0.5675604854219556,
+            "green": 0.7928571599296032
+          },
+          "spearman_grade_auroc": 0.3485948880160812,
+          "difficulty_still_red": false,
+          "difficulty_grades": {
+            "TP53": "yellow",
+            "MYC": "yellow",
+            "LMNA": "red"
+          }
+        },
+        "B40": {
+          "grades": {
+            "AKT1": "yellow",
+            "CDK9": "red",
+            "MAP2K1": "red",
+            "ALK": "red",
+            "EGFR": "yellow",
+            "MET": "yellow",
+            "AURKA": "green",
+            "ERBB2": "yellow",
+            "MTOR": "yellow",
+            "BRAF": "green",
+            "FGFR1": "red",
+            "MYC": "yellow",
+            "CDK2": "yellow",
+            "HDAC1": "yellow",
+            "PIK3CA": "red",
+            "CDK4": "green",
+            "JAK2": "red",
+            "PLK1": "yellow",
+            "CDK6": "red",
+            "LMNA": "red",
+            "TP53": "yellow"
+          },
+          "dist": {
+            "red": 8,
+            "yellow": 10,
+            "green": 3
+          },
+          "gap_targets": [
+            "MET",
+            "PLK1"
+          ],
+          "gap_aurocs": {
+            "MET": 0.360359450726979,
+            "PLK1": 0.799409359382099
+          },
+          "auroc_mean_by_grade": {
+            "yellow": 0.6478753383717479,
+            "red": 0.5675604854219556,
+            "green": 0.7928571599296032
+          },
+          "spearman_grade_auroc": 0.3485948880160812,
+          "difficulty_still_red": false,
+          "difficulty_grades": {
+            "TP53": "yellow",
+            "MYC": "yellow",
+            "LMNA": "red"
+          }
+        },
+        "B45": {
+          "grades": {
+            "AKT1": "yellow",
+            "CDK9": "red",
+            "MAP2K1": "red",
+            "ALK": "red",
+            "EGFR": "yellow",
+            "MET": "red",
+            "AURKA": "green",
+            "ERBB2": "yellow",
+            "MTOR": "yellow",
+            "BRAF": "green",
+            "FGFR1": "red",
+            "MYC": "yellow",
+            "CDK2": "yellow",
+            "HDAC1": "yellow",
+            "PIK3CA": "red",
+            "CDK4": "green",
+            "JAK2": "red",
+            "PLK1": "yellow",
+            "CDK6": "red",
+            "LMNA": "red",
+            "TP53": "yellow"
+          },
+          "dist": {
+            "red": 9,
+            "yellow": 9,
+            "green": 3
+          },
+          "gap_targets": [
+            "MET",
+            "PLK1"
+          ],
+          "gap_aurocs": {
+            "MET": 0.360359450726979,
+            "PLK1": 0.799409359382099
+          },
+          "auroc_mean_by_grade": {
+            "yellow": 0.6889490366067149,
+            "red": 0.5416603560850834,
+            "green": 0.7928571599296032
+          },
+          "spearman_grade_auroc": 0.4784635717867781,
+          "difficulty_still_red": false,
+          "difficulty_grades": {
+            "TP53": "yellow",
+            "MYC": "yellow",
+            "LMNA": "red"
+          }
+        },
+        "C": {
+          "grades": {
+            "AKT1": "yellow",
+            "CDK9": "red",
+            "MAP2K1": "red",
+            "ALK": "red",
+            "EGFR": "yellow",
+            "MET": "red",
+            "AURKA": "green",
+            "ERBB2": "yellow",
+            "MTOR": "yellow",
+            "BRAF": "green",
+            "FGFR1": "red",
+            "MYC": "yellow",
+            "CDK2": "yellow",
+            "HDAC1": "yellow",
+            "PIK3CA": "red",
+            "CDK4": "green",
+            "JAK2": "red",
+            "PLK1": "yellow",
+            "CDK6": "red",
+            "LMNA": "red",
+            "TP53": "yellow"
+          },
+          "dist": {
+            "red": 9,
+            "yellow": 9,
+            "green": 3
+          },
+          "gap_targets": [
+            "MET",
+            "PLK1"
+          ],
+          "gap_aurocs": {
+            "MET": 0.360359450726979,
+            "PLK1": 0.799409359382099
+          },
+          "auroc_mean_by_grade": {
+            "yellow": 0.6889490366067149,
+            "red": 0.5416603560850834,
+            "green": 0.7928571599296032
+          },
+          "spearman_grade_auroc": 0.4784635717867781,
+          "difficulty_still_red": false,
+          "difficulty_grades": {
+            "TP53": "yellow",
+            "MYC": "yellow",
+            "LMNA": "red"
+          }
+        }
+      },
+      "tuples": {
+        "AKT1": {
+          "n_sig": 78,
+          "loho": 0.45098039215686275,
+          "auroc": 0.7449139280125195,
+          "grade45": "yellow",
+          "n_samples": 217,
+          "n_hairpins": 12
+        },
+        "CDK9": {
+          "n_sig": 0,
+          "loho": 0.3333333333333333,
+          "auroc": 0.5,
+          "grade45": "red",
+          "n_samples": 47,
+          "n_hairpins": 10
+        },
+        "MAP2K1": {
+          "n_sig": 27,
+          "loho": 0.2558139534883721,
+          "auroc": 0.9729233979536888,
+          "grade45": "red",
+          "n_samples": 72,
+          "n_hairpins": 5
+        },
+        "ALK": {
+          "n_sig": 0,
+          "loho": 0.17647058823529413,
+          "auroc": 0.5,
+          "grade45": "red",
+          "n_samples": 38,
+          "n_hairpins": 9
+        },
+        "EGFR": {
+          "n_sig": 25,
+          "loho": 0.3157894736842105,
+          "auroc": 0.7284019187073971,
+          "grade45": "yellow",
+          "n_samples": 240,
+          "n_hairpins": 20
+        },
+        "MET": {
+          "n_sig": 5,
+          "loho": 0.42857142857142855,
+          "auroc": 0.360359450726979,
+          "grade45": "red",
+          "n_samples": 296,
+          "n_hairpins": 17
+        },
+        "AURKA": {
+          "n_sig": 65,
+          "loho": 0.5294117647058824,
+          "auroc": 0.8203160498813551,
+          "grade45": "green",
+          "n_samples": 139,
+          "n_hairpins": 9
+        },
+        "ERBB2": {
+          "n_sig": 62,
+          "loho": 0.3333333333333333,
+          "auroc": 0.3787943047561345,
+          "grade45": "yellow",
+          "n_samples": 115,
+          "n_hairpins": 9
+        },
+        "MTOR": {
+          "n_sig": 40,
+          "loho": 0.40350877192982454,
+          "auroc": 0.9972226430338837,
+          "grade45": "yellow",
+          "n_samples": 152,
+          "n_hairpins": 18
+        },
+        "BRAF": {
+          "n_sig": 25,
+          "loho": 0.5625,
+          "auroc": 0.7427936636177396,
+          "grade45": "green",
+          "n_samples": 231,
+          "n_hairpins": 14
+        },
+        "FGFR1": {
+          "n_sig": 0,
+          "loho": 0.17647058823529413,
+          "auroc": 0.5,
+          "grade45": "red",
+          "n_samples": 43,
+          "n_hairpins": 12
+        },
+        "MYC": {
+          "n_sig": 90,
+          "loho": 0.4594594594594595,
+          "auroc": null,
+          "grade45": "yellow",
+          "n_samples": 290,
+          "n_hairpins": 14
+        },
+        "CDK2": {
+          "n_sig": 26,
+          "loho": 0.4444444444444444,
+          "auroc": 0.3982280781462971,
+          "grade45": "yellow",
+          "n_samples": 202,
+          "n_hairpins": 16
+        },
+        "HDAC1": {
+          "n_sig": 34,
+          "loho": 0.36,
+          "auroc": 0.7756730242086736,
+          "grade45": "yellow",
+          "n_samples": 118,
+          "n_hairpins": 12
+        },
+        "PIK3CA": {
+          "n_sig": 0,
+          "loho": 0.5384615384615384,
+          "auroc": 0.5,
+          "grade45": "red",
+          "n_samples": 114,
+          "n_hairpins": 11
+        },
+        "CDK4": {
+          "n_sig": 83,
+          "loho": 0.6363636363636364,
+          "auroc": 0.8154617662897146,
+          "grade45": "green",
+          "n_samples": 71,
+          "n_hairpins": 11
+        },
+        "JAK2": {
+          "n_sig": 0,
+          "loho": 0.25,
+          "auroc": 0.5,
+          "grade45": "red",
+          "n_samples": 50,
+          "n_hairpins": 11
+        },
+        "PLK1": {
+          "n_sig": 16,
+          "loho": 0.45454545454545453,
+          "auroc": 0.799409359382099,
+          "grade45": "red",
+          "n_samples": 43,
+          "n_hairpins": 11
+        },
+        "CDK6": {
+          "n_sig": 0,
+          "loho": 0.6666666666666666,
+          "auroc": 0.5,
+          "grade45": "red",
+          "n_samples": 185,
+          "n_hairpins": 16
+        },
+        "LMNA": {
+          "n_sig": 0,
+          "loho": 0.1111111111111111,
+          "auroc": null,
+          "grade45": "red",
+          "n_samples": 27,
+          "n_hairpins": 3
+        },
+        "TP53": {
+          "n_sig": 40,
+          "loho": 0.3333333333333333,
+          "auroc": null,
+          "grade45": "yellow",
+          "n_samples": 71,
+          "n_hairpins": 7
+        }
+      }
+    }
+  },
+  "no_downgrade_check": {
+    "l3:A": [],
+    "l3:B35": [],
+    "l3:B40": [],
+    "l3:B45": [],
+    "l3:C": [],
+    "l5:A": [],
+    "l5:B35": [],
+    "l5:B40": [],
+    "l5:B45": [],
+    "l5:C": []
+  }
+}

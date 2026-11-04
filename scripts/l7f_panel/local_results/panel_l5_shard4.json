@@ -1,0 +1,143 @@
+{
+  "side": "l5",
+  "shard": "4/7",
+  "params": {
+    "ALGO_VERSION": "2",
+    "DATA_PROVIDER": "l5",
+    "KS_THRESHOLD": 0.2,
+    "FDR_THRESHOLD": 0.001,
+    "BOOTSTRAP_N": 100000,
+    "RANDOM_SEED": 42,
+    "FAST_MODE_TOP_N": 0,
+    "MAX_GENES_PER_DIRECTION": 50,
+    "DRUG_NULL_N": 10000
+  },
+  "grading_thresholds": {
+    "RULE_VERSION": "4.5",
+    "SUITABILITY_MIN_SIG": 5,
+    "SUITABILITY_YELLOW_MIN_SIG": 20,
+    "SUITABILITY_JACCARD_GREEN": 0.5,
+    "SUITABILITY_JACCARD_RED": 0.3
+  },
+  "n_drugs": 19811,
+  "coverage": {
+    "CDK2": {
+      "n_samples": 202,
+      "n_hairpins": 16,
+      "in_available_genes": true
+    },
+    "HDAC1": {
+      "n_samples": 118,
+      "n_hairpins": 12,
+      "in_available_genes": true
+    },
+    "PIK3CA": {
+      "n_samples": 114,
+      "n_hairpins": 11,
+      "in_available_genes": true
+    }
+  },
+  "targets": {
+    "CDK2": {
+      "n_samples": 202,
+      "n_hairpins": 16,
+      "n_cells": 15,
+      "n_sig": 26,
+      "n_up": 14,
+      "n_down": 12,
+      "loho_jaccard_min": 0.4444444444444444,
+      "grade": "yellow",
+      "rule_version": "4.5",
+      "n_excluded_nan_genes": 0,
+      "target_median_z": -2.1145668029785156,
+      "auroc_self": 0.3982280781462971,
+      "gold_found": [
+        "cyc202",
+        "alvocidib"
+      ],
+      "gold_missing": [
+        "dinaciclib",
+        "azd5438"
+      ],
+      "gold_best_rank": 4869,
+      "gold_ranks": [
+        4869,
+        18975
+      ],
+      "gold_top50_hits": 0,
+      "frac_drugs_fdr_reversal_lt_0.05": 0.033011963050830345
+    },
+    "HDAC1": {
+      "n_samples": 118,
+      "n_hairpins": 12,
+      "n_cells": 15,
+      "n_sig": 34,
+      "n_up": 14,
+      "n_down": 20,
+      "loho_jaccard_min": 0.36,
+      "grade": "yellow",
+      "rule_version": "4.5",
+      "n_excluded_nan_genes": 0,
+      "target_median_z": null,
+      "auroc_self": 0.7756730242086736,
+      "gold_found": [
+        "saha",
+        "lbh589",
+        "trichostatin a",
+        "entinostat",
+        "mgcd0103",
+        "valproic acid",
+        "scriptaid"
+      ],
+      "gold_missing": [],
+      "gold_best_rank": 161,
+      "gold_ranks": [
+        161,
+        1021,
+        1734,
+        1860,
+        2949,
+        7249,
+        16152
+      ],
+      "gold_top50_hits": 0,
+      "frac_drugs_fdr_reversal_lt_0.05": 0.0
+    },
+    "PIK3CA": {
+      "n_samples": 114,
+      "n_hairpins": 11,
+      "n_cells": 11,
+      "n_sig": 0,
+      "n_up": 0,
+      "n_down": 0,
+      "loho_jaccard_min": 0.5384615384615384,
+      "grade": "red",
+      "rule_version": "4.5",
+      "n_excluded_nan_genes": 0,
+      "target_median_z": -0.5057500004768372,
+      "auroc_self": 0.5,
+      "gold_found": [
+        "gdc-0941",
+        "bkm120",
+        "cal-101",
+        "pi-103",
+        "bez235"
+      ],
+      "gold_missing": [
+        "alpelisib"
+      ],
+      "gold_best_rank": 1,
+      "gold_ranks": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "gold_top50_hits": 5,
+      "frac_drugs_fdr_reversal_lt_0.05": 0.0
+    }
+  },
+  "negative_control": {},
+  "elapsed_s": 2246.2
+}

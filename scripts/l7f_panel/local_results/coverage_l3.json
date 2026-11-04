@@ -1,0 +1,998 @@
+{
+  "side": "l3",
+  "genes": {
+    "AKT1": {
+      "in_available_genes": true,
+      "n_samples": 615,
+      "n_hairpins": 12
+    },
+    "ALK": {
+      "in_available_genes": true,
+      "n_samples": 111,
+      "n_hairpins": 9
+    },
+    "AURKA": {
+      "in_available_genes": true,
+      "n_samples": 417,
+      "n_hairpins": 9
+    },
+    "BRAF": {
+      "in_available_genes": true,
+      "n_samples": 689,
+      "n_hairpins": 14
+    },
+    "CDK2": {
+      "in_available_genes": true,
+      "n_samples": 614,
+      "n_hairpins": 16
+    },
+    "CDK4": {
+      "in_available_genes": true,
+      "n_samples": 210,
+      "n_hairpins": 11
+    },
+    "CDK6": {
+      "in_available_genes": true,
+      "n_samples": 542,
+      "n_hairpins": 16
+    },
+    "CDK9": {
+      "in_available_genes": true,
+      "n_samples": 113,
+      "n_hairpins": 10
+    },
+    "EGFR": {
+      "in_available_genes": true,
+      "n_samples": 680,
+      "n_hairpins": 20
+    },
+    "ERBB2": {
+      "in_available_genes": true,
+      "n_samples": 313,
+      "n_hairpins": 9
+    },
+    "FGFR1": {
+      "in_available_genes": true,
+      "n_samples": 129,
+      "n_hairpins": 12
+    },
+    "HDAC1": {
+      "in_available_genes": true,
+      "n_samples": 367,
+      "n_hairpins": 12
+    },
+    "JAK2": {
+      "in_available_genes": true,
+      "n_samples": 144,
+      "n_hairpins": 11
+    },
+    "LMNA": {
+      "in_available_genes": true,
+      "n_samples": 93,
+      "n_hairpins": 3
+    },
+    "MAP2K1": {
+      "in_available_genes": true,
+      "n_samples": 196,
+      "n_hairpins": 5
+    },
+    "MET": {
+      "in_available_genes": true,
+      "n_samples": 826,
+      "n_hairpins": 17
+    },
+    "MTOR": {
+      "in_available_genes": true,
+      "n_samples": 455,
+      "n_hairpins": 18
+    },
+    "MYC": {
+      "in_available_genes": true,
+      "n_samples": 860,
+      "n_hairpins": 16
+    },
+    "PIK3CA": {
+      "in_available_genes": true,
+      "n_samples": 286,
+      "n_hairpins": 11
+    },
+    "PLK1": {
+      "in_available_genes": true,
+      "n_samples": 131,
+      "n_hairpins": 11
+    },
+    "TP53": {
+      "in_available_genes": true,
+      "n_samples": 196,
+      "n_hairpins": 7
+    }
+  },
+  "gold_drugs": {
+    "AKT1": [
+      {
+        "aliases": [
+          "mk-2206",
+          "mk2206"
+        ],
+        "present": [
+          "mk-2206"
+        ]
+      },
+      {
+        "aliases": [
+          "azd5363",
+          "capivasertib"
+        ],
+        "present": []
+      },
+      {
+        "aliases": [
+          "gdc-0068",
+          "ipatasertib"
+        ],
+        "present": []
+      },
+      {
+        "aliases": [
+          "perifosine"
+        ],
+        "present": []
+      },
+      {
+        "aliases": [
+          "triciribine",
+          "tricirubine"
+        ],
+        "present": [
+          "triciribine"
+        ]
+      }
+    ],
+    "ALK": [
+      {
+        "aliases": [
+          "crizotinib",
+          "pf-02341066"
+        ],
+        "present": [
+          "crizotinib"
+        ]
+      },
+      {
+        "aliases": [
+          "ceritinib",
+          "ldk378"
+        ],
+        "present": []
+      },
+      {
+        "aliases": [
+          "alectinib",
+          "ch5424802",
+          "ro5424802"
+        ],
+        "present": []
+      },
+      {
+        "aliases": [
+          "lorlatinib",
+          "pf-06463922"
+        ],
+        "present": []
+      },
+      {
+        "aliases": [
+          "nvp-tae684",
+          "tae684"
+        ],
+        "present": [
+          "nvp-tae684"
+        ]
+      }
+    ],
+    "AURKA": [
+      {
+        "aliases": [
+          "alisertib",
+          "mln8237"
+        ],
+        "present": [
+          "alisertib"
+        ]
+      },
+      {
+        "aliases": [
+          "mk-0457",
+          "tozasertib",
+          "vx-680"
+        ],
+        "present": [
+          "tozasertib"
+        ]
+      },
+      {
+        "aliases": [
+          "danusertib",
+          "pha-739358"
+        ],
+        "present": [
+          "danusertib"
+        ]
+      },
+      {
+        "aliases": [
+          "enmd-2076"
+        ],
+        "present": [
+          "enmd-2076"
+        ]
+      }
+    ],
+    "BRAF": [
+      {
+        "aliases": [
+          "plx4032",
+          "vemurafenib"
+        ],
+        "present": [
+          "vemurafenib"
+        ]
+      },
+      {
+        "aliases": [
+          "dabrafenib",
+          "gsk2118436"
+        ],
+        "present": [
+          "dabrafenib"
+        ]
+      },
+      {
+        "aliases": [
+          "sorafenib"
+        ],
+        "present": [
+          "sorafenib"
+        ]
+      },
+      {
+        "aliases": [
+          "plx-4720",
+          "plx4720"
+        ],
+        "present": [
+          "plx-4720"
+        ]
+      },
+      {
+        "aliases": [
+          "gsk1120212",
+          "trametinib"
+        ],
+        "present": [
+          "trametinib"
+        ]
+      },
+      {
+        "aliases": [
+          "azd6244",
+          "selumetinib"
+        ],
+        "present": [
+          "selumetinib"
+        ]
+      },
+      {
+        "aliases": [
+          "pd-0325901",
+          "pd0325901"
+        ],
+        "present": [
+          "pd-0325901"
+        ]
+      },
+      {
+        "aliases": [
+          "ci-1040",
+          "ci1040",
+          "pd184352"
+        ],
+        "present": []
+      }
+    ],
+    "CDK2": [
+      {
+        "aliases": [
+          "dinaciclib",
+          "sch727965"
+        ],
+        "present": []
+      },
+      {
+        "aliases": [
+          "cyc202",
+          "roscovitine",
+          "seliciclib"
+        ],
+        "present": [
+          "roscovitine"
+        ]
+      },
+      {
+        "aliases": [
+          "alvocidib",
+          "flavopiridol"
+        ],
+        "present": [
+          "alvocidib"
+        ]
+      },
+      {
+        "aliases": [
+          "azd5438"
+        ],
+        "present": []
+      }
+    ],
+    "CDK4": [
+      {
+        "aliases": [
+          "palbociclib",
+          "pd-0332991"
+        ],
+        "present": [
+          "palbociclib"
+        ]
+      },
+      {
+        "aliases": [
+          "lee011",
+          "ribociclib"
+        ],
+        "present": []
+      },
+      {
+        "aliases": [
+          "abemaciclib",
+          "ly2835219"
+        ],
+        "present": []
+      },
+      {
+        "aliases": [
+          "dinaciclib",
+          "sch727965"
+        ],
+        "present": []
+      },
+      {
+        "aliases": [
+          "alvocidib",
+          "flavopiridol"
+        ],
+        "present": [
+          "alvocidib"
+        ]
+      },
+      {
+        "aliases": [
+          "cyc202",
+          "roscovitine",
+          "seliciclib"
+        ],
+        "present": [
+          "roscovitine"
+        ]
+      }
+    ],
+    "CDK6": [
+      {
+        "aliases": [
+          "palbociclib",
+          "pd-0332991"
+        ],
+        "present": [
+          "palbociclib"
+        ]
+      },
+      {
+        "aliases": [
+          "lee011",
+          "ribociclib"
+        ],
+        "present": []
+      },
+      {
+        "aliases": [
+          "abemaciclib",
+          "ly2835219"
+        ],
+        "present": []
+      }
+    ],
+    "CDK9": [
+      {
+        "aliases": [
+          "alvocidib",
+          "flavopiridol"
+        ],
+        "present": [
+          "alvocidib"
+        ]
+      },
+      {
+        "aliases": [
+          "dinaciclib",
+          "sch727965"
+        ],
+        "present": []
+      },
+      {
+        "aliases": [
+          "bms-387032",
+          "sns-032"
+        ],
+        "present": [
+          "bms-387032"
+        ]
+      },
+      {
+        "aliases": [
+          "atuveciclib",
+          "bay-1143572",
+          "bay1143572"
+        ],
+        "present": []
+      }
+    ],
+    "EGFR": [
+      {
+        "aliases": [
+          "gefitinib"
+        ],
+        "present": [
+          "gefitinib"
+        ]
+      },
+      {
+        "aliases": [
+          "erlotinib"
+        ],
+        "present": [
+          "erlotinib"
+        ]
+      },
+      {
+        "aliases": [
+          "afatinib",
+          "bibw2992"
+        ],
+        "present": [
+          "afatinib"
+        ]
+      },
+      {
+        "aliases": [
+          "dacomitinib",
+          "pf-00299804"
+        ],
+        "present": []
+      },
+      {
+        "aliases": [
+          "lapatinib"
+        ],
+        "present": [
+          "lapatinib"
+        ]
+      },
+      {
+        "aliases": [
+          "canertinib",
+          "ci-1033"
+        ],
+        "present": [
+          "canertinib"
+        ]
+      },
+      {
+        "aliases": [
+          "ekb-569",
+          "pelitinib"
+        ],
+        "present": [
+          "pelitinib"
+        ]
+      }
+    ],
+    "ERBB2": [
+      {
+        "aliases": [
+          "lapatinib"
+        ],
+        "present": [
+          "lapatinib"
+        ]
+      },
+      {
+        "aliases": [
+          "hki-272",
+          "neratinib"
+        ],
+        "present": [
+          "neratinib"
+        ]
+      },
+      {
+        "aliases": [
+          "afatinib",
+          "bibw2992"
+        ],
+        "present": [
+          "afatinib"
+        ]
+      },
+      {
+        "aliases": [
+          "canertinib",
+          "ci-1033"
+        ],
+        "present": [
+          "canertinib"
+        ]
+      },
+      {
+        "aliases": [
+          "ekb-569",
+          "pelitinib"
+        ],
+        "present": [
+          "pelitinib"
+        ]
+      }
+    ],
+    "FGFR1": [
+      {
+        "aliases": [
+          "ap24534",
+          "ponatinib"
+        ],
+        "present": [
+          "ponatinib"
+        ]
+      },
+      {
+        "aliases": [
+          "bgj398",
+          "infigratinib",
+          "nvp-bgj398"
+        ],
+        "present": [
+          "nvp-bgj398"
+        ]
+      },
+      {
+        "aliases": [
+          "azd4547"
+        ],
+        "present": []
+      },
+      {
+        "aliases": [
+          "pd-173074",
+          "pd173074"
+        ],
+        "present": [
+          "pd-173074"
+        ]
+      },
+      {
+        "aliases": [
+          "chir-258",
+          "dovitinib",
+          "tki258"
+        ],
+        "present": [
+          "dovitinib"
+        ]
+      }
+    ],
+    "HDAC1": [
+      {
+        "aliases": [
+          "saha",
+          "vorinostat"
+        ],
+        "present": [
+          "vorinostat"
+        ]
+      },
+      {
+        "aliases": [
+          "lbh589",
+          "panobinostat"
+        ],
+        "present": [
+          "panobinostat"
+        ]
+      },
+      {
+        "aliases": [
+          "trichostatin a",
+          "trichostatin-a"
+        ],
+        "present": [
+          "trichostatin-a"
+        ]
+      },
+      {
+        "aliases": [
+          "entinostat",
+          "ms-275",
+          "sndx-275"
+        ],
+        "present": [
+          "entinostat"
+        ]
+      },
+      {
+        "aliases": [
+          "mgcd0103",
+          "mocetinostat"
+        ],
+        "present": [
+          "mocetinostat"
+        ]
+      },
+      {
+        "aliases": [
+          "valproic acid",
+          "valproic-acid"
+        ],
+        "present": [
+          "valproic-acid"
+        ]
+      },
+      {
+        "aliases": [
+          "scriptaid"
+        ],
+        "present": [
+          "scriptaid"
+        ]
+      }
+    ],
+    "JAK2": [
+      {
+        "aliases": [
+          "incb018424",
+          "ruxolitinib"
+        ],
+        "present": [
+          "ruxolitinib"
+        ]
+      },
+      {
+        "aliases": [
+          "fedratinib",
+          "sar302503",
+          "tg101348"
+        ],
+        "present": []
+      },
+      {
+        "aliases": [
+          "cyt387",
+          "gs-0387",
+          "momelotinib"
+        ],
+        "present": [
+          "cyt387"
+        ]
+      },
+      {
+        "aliases": [
+          "baricitinib",
+          "incb028050",
+          "ly3009104"
+        ],
+        "present": []
+      },
+      {
+        "aliases": [
+          "azd1480"
+        ],
+        "present": []
+      },
+      {
+        "aliases": [
+          "cep-701",
+          "lestaurtinib"
+        ],
+        "present": [
+          "lestaurtinib"
+        ]
+      }
+    ],
+    "LMNA": [],
+    "MAP2K1": [
+      {
+        "aliases": [
+          "gsk1120212",
+          "trametinib"
+        ],
+        "present": [
+          "trametinib"
+        ]
+      },
+      {
+        "aliases": [
+          "arry-142886",
+          "azd6244",
+          "selumetinib"
+        ],
+        "present": [
+          "selumetinib"
+        ]
+      },
+      {
+        "aliases": [
+          "cobimetinib",
+          "gdc-0973",
+          "xl518"
+        ],
+        "present": []
+      },
+      {
+        "aliases": [
+          "ci-1040",
+          "ci1040",
+          "pd184352"
+        ],
+        "present": []
+      },
+      {
+        "aliases": [
+          "pd-0325901",
+          "pd0325901"
+        ],
+        "present": [
+          "pd-0325901"
+        ]
+      },
+      {
+        "aliases": [
+          "bay-86-9766",
+          "rdea119",
+          "refametinib"
+        ],
+        "present": []
+      },
+      {
+        "aliases": [
+          "arry-162",
+          "binimetinib",
+          "mek162"
+        ],
+        "present": []
+      }
+    ],
+    "MET": [
+      {
+        "aliases": [
+          "crizotinib",
+          "pf-02341066"
+        ],
+        "present": [
+          "crizotinib"
+        ]
+      },
+      {
+        "aliases": [
+          "bms-907351",
+          "cabozantinib",
+          "xl184"
+        ],
+        "present": []
+      },
+      {
+        "aliases": [
+          "foretinib",
+          "gsk1363089",
+          "xl880"
+        ],
+        "present": [
+          "foretinib"
+        ]
+      },
+      {
+        "aliases": [
+          "pha-665752",
+          "pha665752"
+        ],
+        "present": [
+          "pha-665752"
+        ]
+      }
+    ],
+    "MTOR": [
+      {
+        "aliases": [
+          "rapamycin",
+          "sirolimus"
+        ],
+        "present": [
+          "sirolimus"
+        ]
+      },
+      {
+        "aliases": [
+          "everolimus"
+        ],
+        "present": [
+          "everolimus"
+        ]
+      },
+      {
+        "aliases": [
+          "temsirolimus"
+        ],
+        "present": [
+          "temsirolimus"
+        ]
+      },
+      {
+        "aliases": [
+          "torin-1",
+          "torin1"
+        ],
+        "present": [
+          "torin-1"
+        ]
+      },
+      {
+        "aliases": [
+          "torin-2",
+          "torin2"
+        ],
+        "present": [
+          "torin-2"
+        ]
+      },
+      {
+        "aliases": [
+          "azd8055"
+        ],
+        "present": []
+      },
+      {
+        "aliases": [
+          "bez235",
+          "dactolisib",
+          "nvp-bez235"
+        ],
+        "present": [
+          "nvp-bez235"
+        ]
+      },
+      {
+        "aliases": [
+          "pi-103",
+          "pi103"
+        ],
+        "present": [
+          "pi-103"
+        ]
+      },
+      {
+        "aliases": [
+          "wortmannin"
+        ],
+        "present": [
+          "wortmannin"
+        ]
+      },
+      {
+        "aliases": [
+          "ly294002"
+        ],
+        "present": []
+      }
+    ],
+    "MYC": [],
+    "PIK3CA": [
+      {
+        "aliases": [
+          "alpelisib",
+          "byl719"
+        ],
+        "present": []
+      },
+      {
+        "aliases": [
+          "gdc-0941",
+          "pictilisib"
+        ],
+        "present": [
+          "gdc-0941"
+        ]
+      },
+      {
+        "aliases": [
+          "bkm120",
+          "buparlisib",
+          "nvp-bkm120"
+        ],
+        "present": [
+          "buparlisib"
+        ]
+      },
+      {
+        "aliases": [
+          "cal-101",
+          "gs-1101",
+          "idelalisib"
+        ],
+        "present": [
+          "idelalisib"
+        ]
+      },
+      {
+        "aliases": [
+          "pi-103",
+          "pi103"
+        ],
+        "present": [
+          "pi-103"
+        ]
+      },
+      {
+        "aliases": [
+          "bez235",
+          "dactolisib",
+          "nvp-bez235"
+        ],
+        "present": [
+          "nvp-bez235"
+        ]
+      }
+    ],
+    "PLK1": [
+      {
+        "aliases": [
+          "bi-6727",
+          "bi6727",
+          "volasertib"
+        ],
+        "present": []
+      },
+      {
+        "aliases": [
+          "bi-2536",
+          "bi2536"
+        ],
+        "present": [
+          "bi-2536"
+        ]
+      },
+      {
+        "aliases": [
+          "on-01910",
+          "on01910",
+          "rigosertib"
+        ],
+        "present": [
+          "on-01910"
+        ]
+      },
+      {
+        "aliases": [
+          "gsk461364"
+        ],
+        "present": []
+      }
+    ],
+    "TP53": []
+  },
+  "n_drugs": 19811
+}

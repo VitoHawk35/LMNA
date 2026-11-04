@@ -253,7 +253,7 @@ def test_invalid_mode_rejected(tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# 防线2：判档规则 4.5（landmark 自身 KS > 0 → 最高黄档）
+# 防线2：判档规则（landmark 自身 KS > 0 → 最高黄档）
 # ---------------------------------------------------------------------------
 
 def _grade_sig(self_ks, n_sig=30, loho=0.8):
@@ -284,8 +284,8 @@ def test_self_ks_positive_caps_green_at_yellow():
 
     result = grade(_grade_sig(self_ks=0.5), _grade_pre())
     assert result["grade"] == "yellow"
-    assert result["rule_version"] == "4.5"
-    assert suitability.RULE_VERSION == "4.5"
+    assert result["rule_version"] == "4.6"
+    assert suitability.RULE_VERSION == "4.6"
     assert any(
         "敲低后目标基因自身未下降" in r and "敲低可能未生效或数据有误" in r
         for r in result["reasons"]
@@ -446,7 +446,7 @@ def test_fixture_cdk4_unchanged_and_fake_signature_yellow():
     assert sig["n_sig"] == expected_n_sig
     assert abs(sig["loho_jaccard_min"] - expected_loho) <= 0.05
     assert sig["qc"]["grade"] == "green"
-    assert sig["qc"]["rule_version"] == "4.5"
+    assert sig["qc"]["rule_version"] == "4.6"
     assert sig["ks_scores"]["CDK4"] < -0.3
 
     # 人为把 CDK4 自身 KS 改成正值的伪签名 → 最高黄档

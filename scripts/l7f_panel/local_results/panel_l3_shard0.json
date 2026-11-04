@@ -1,0 +1,162 @@
+{
+  "side": "l3",
+  "shard": "0/11",
+  "params": {
+    "ALGO_VERSION": "2",
+    "DATA_PROVIDER": "l3",
+    "KS_THRESHOLD": 0.2,
+    "FDR_THRESHOLD": 0.001,
+    "BOOTSTRAP_N": 100000,
+    "RANDOM_SEED": 42,
+    "FAST_MODE_TOP_N": 0,
+    "MAX_GENES_PER_DIRECTION": 50,
+    "DRUG_NULL_N": 10000
+  },
+  "grading_thresholds": {
+    "RULE_VERSION": "4.5",
+    "SUITABILITY_MIN_SIG": 5,
+    "SUITABILITY_YELLOW_MIN_SIG": 20,
+    "SUITABILITY_JACCARD_GREEN": 0.5,
+    "SUITABILITY_JACCARD_RED": 0.3
+  },
+  "n_drugs": 19811,
+  "coverage": {
+    "AKT1": {
+      "n_samples": 615,
+      "n_hairpins": 12,
+      "in_available_genes": true
+    },
+    "HDAC1": {
+      "n_samples": 367,
+      "n_hairpins": 12,
+      "in_available_genes": true
+    }
+  },
+  "targets": {
+    "AKT1": {
+      "n_samples": 615,
+      "n_hairpins": 12,
+      "n_cells": 15,
+      "n_sig": 43,
+      "n_up": 12,
+      "n_down": 31,
+      "loho_jaccard_min": 0.5636363636363636,
+      "grade": "green",
+      "rule_version": "4.5",
+      "n_excluded_nan_genes": 250,
+      "target_median_z": -5.98922872543335,
+      "auroc_self": 0.7833055681760815,
+      "gold_found": [
+        "mk-2206",
+        "triciribine"
+      ],
+      "gold_missing": [
+        "azd5363",
+        "gdc-0068",
+        "perifosine"
+      ],
+      "gold_best_rank": 2455,
+      "gold_ranks": [
+        2455,
+        6133
+      ],
+      "gold_top50_hits": 0,
+      "frac_drugs_fdr_reversal_lt_0.05": 0.13522790368986926
+    },
+    "HDAC1": {
+      "n_samples": 367,
+      "n_hairpins": 12,
+      "n_cells": 15,
+      "n_sig": 10,
+      "n_up": 4,
+      "n_down": 6,
+      "loho_jaccard_min": 0.3333333333333333,
+      "grade": "red",
+      "rule_version": "4.5",
+      "n_excluded_nan_genes": 250,
+      "target_median_z": null,
+      "auroc_self": 0.8901448480826384,
+      "gold_found": [
+        "saha",
+        "lbh589",
+        "trichostatin a",
+        "entinostat",
+        "mgcd0103",
+        "valproic acid",
+        "scriptaid"
+      ],
+      "gold_missing": [],
+      "gold_best_rank": 9,
+      "gold_ranks": [
+        9,
+        48,
+        246,
+        325,
+        587,
+        696,
+        13346
+      ],
+      "gold_top50_hits": 2,
+      "frac_drugs_fdr_reversal_lt_0.05": 0.0
+    }
+  },
+  "negative_control": {
+    "n_random_signatures": 20,
+    "sig_size": [
+      50,
+      50
+    ],
+    "null_M": 10000,
+    "seed": 42,
+    "frac_drugs_fdr_lt_0.05_per_sig": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "max_frac": 0.0,
+    "mean_frac": 0.0,
+    "pass_lt_1pct": true,
+    "grades_current_rule": [
+      "red",
+      "red",
+      "red",
+      "red",
+      "red",
+      "red",
+      "red",
+      "red",
+      "red",
+      "red",
+      "red",
+      "red",
+      "red",
+      "red",
+      "red",
+      "red",
+      "red",
+      "red",
+      "red",
+      "red"
+    ],
+    "all_red": true,
+    "rule_version": "4.5"
+  },
+  "elapsed_s": 5360.3
+}

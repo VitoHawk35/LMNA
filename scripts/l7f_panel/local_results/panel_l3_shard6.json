@@ -1,0 +1,86 @@
+{
+  "side": "l3",
+  "shard": "6/11",
+  "params": {
+    "ALGO_VERSION": "2",
+    "DATA_PROVIDER": "l3",
+    "KS_THRESHOLD": 0.2,
+    "FDR_THRESHOLD": 0.001,
+    "BOOTSTRAP_N": 100000,
+    "RANDOM_SEED": 42,
+    "FAST_MODE_TOP_N": 0,
+    "MAX_GENES_PER_DIRECTION": 50,
+    "DRUG_NULL_N": 10000
+  },
+  "grading_thresholds": {
+    "RULE_VERSION": "4.5",
+    "SUITABILITY_MIN_SIG": 5,
+    "SUITABILITY_YELLOW_MIN_SIG": 20,
+    "SUITABILITY_JACCARD_GREEN": 0.5,
+    "SUITABILITY_JACCARD_RED": 0.3
+  },
+  "n_drugs": 19811,
+  "coverage": {
+    "CDK6": {
+      "n_samples": 542,
+      "n_hairpins": 16,
+      "in_available_genes": true
+    },
+    "MYC": {
+      "n_samples": 860,
+      "n_hairpins": 16,
+      "in_available_genes": true
+    }
+  },
+  "targets": {
+    "CDK6": {
+      "n_samples": 542,
+      "n_hairpins": 16,
+      "n_cells": 11,
+      "n_sig": 25,
+      "n_up": 8,
+      "n_down": 17,
+      "loho_jaccard_min": 0.7241379310344828,
+      "grade": "green",
+      "rule_version": "4.5",
+      "n_excluded_nan_genes": 250,
+      "target_median_z": -0.9444776773452759,
+      "auroc_self": 0.9901564866229177,
+      "gold_found": [
+        "palbociclib"
+      ],
+      "gold_missing": [
+        "lee011",
+        "abemaciclib"
+      ],
+      "gold_best_rank": 196,
+      "gold_ranks": [
+        196
+      ],
+      "gold_top50_hits": 0,
+      "frac_drugs_fdr_reversal_lt_0.05": 0.004542930695068397
+    },
+    "MYC": {
+      "n_samples": 860,
+      "n_hairpins": 16,
+      "n_cells": 14,
+      "n_sig": 58,
+      "n_up": 15,
+      "n_down": 43,
+      "loho_jaccard_min": 0.7846153846153846,
+      "grade": "green",
+      "rule_version": "4.5",
+      "n_excluded_nan_genes": 250,
+      "target_median_z": -0.5981494188308716,
+      "auroc_self": null,
+      "gold_found": [],
+      "gold_missing": [],
+      "gold_best_rank": null,
+      "gold_ranks": [],
+      "gold_top50_hits": 0,
+      "frac_drugs_fdr_reversal_lt_0.05": 0.11221038816818939
+    }
+  },
+  "negative_control": {},
+  "elapsed_s": 7560.5
+}

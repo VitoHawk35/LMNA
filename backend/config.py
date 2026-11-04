@@ -105,9 +105,12 @@ GENE_ANNOTATIONS_PATH = os.getenv(
 )
 
 # 判档阈值（报告 4.4 修订版；做成环境变量便于后续校准）
+# L7f（RULE_VERSION 4.6）：黄档 n_sig 下限 20→5，修复 L3 口径下
+# n_sig∈[5,20) 且 LOHO∈[0.3,0.5) 落入"空隙区"误判红档的问题
+# （依据：docs/design/L7f-规则表重校准.md，21 靶点面板重校准，方案 A）
 SUITABILITY_MIN_HAIRPINS = int(os.getenv("SUITABILITY_MIN_HAIRPINS", "2"))
 SUITABILITY_MIN_SIG = int(os.getenv("SUITABILITY_MIN_SIG", "5"))
-SUITABILITY_YELLOW_MIN_SIG = int(os.getenv("SUITABILITY_YELLOW_MIN_SIG", "20"))
+SUITABILITY_YELLOW_MIN_SIG = int(os.getenv("SUITABILITY_YELLOW_MIN_SIG", "5"))
 SUITABILITY_JACCARD_GREEN = float(os.getenv("SUITABILITY_JACCARD_GREEN", "0.5"))
 SUITABILITY_JACCARD_RED = float(os.getenv("SUITABILITY_JACCARD_RED", "0.3"))
 # 去掉一条 hairpin 后至少剩余的样本数；少于该值则跳过该 hairpin
@@ -126,8 +129,15 @@ API_HOST = os.getenv("API_HOST", "0.0.0.0")
 API_PORT = int(os.getenv("API_PORT", "8001"))
 
 # ============ 数据提供者选择 ============
-# "l5" 或 "l3"（"l3" 尚未实现，设为该值服务会在启动时失败，见 L3Provider）
+# "l5"（默认，MODZ 签名级）/ "l3"（L7e：签名走 L3 派生层 + 药物走 L5
+# 的 CompositeProvider）/ "fixture"（测试）
 DATA_PROVIDER = os.getenv("DATA_PROVIDER", "l5")
+
+# L3 派生层目录（scripts/build_l3_derived.py 的产物；服务器红线目录为
+# /home/keji/l3_tmp/derived/l3_v1，最终落盘位置由交付时与用户确认）
+L3_DERIVED_DIR = os.getenv(
+    "L3_DERIVED_DIR", os.path.join(DATA_DIR, "derived", "l3_v1")
+)
 
 # ============ 任务队列 ============
 # running 任务超过该秒数没有心跳更新即视为超时（默认 7200 秒 = 2 小时）
@@ -144,6 +154,9 @@ def signature_params() -> dict:
     """当前签名/药物打分所用的可复现参数，参与缓存键哈希。"""
     return {
         "ALGO_VERSION": ALGO_VERSION,
+        # DATA_PROVIDER 已足以隔离 L3/L5 缓存；聚合口径（instance/modz）
+        # 由 DATA_PROVIDER 派生，不再单独进哈希（评审 follow-up：避免
+        # 生产 L5 缓存因冗余键全部失效）。
         "DATA_PROVIDER": DATA_PROVIDER,
         "KS_THRESHOLD": KS_THRESHOLD,
         "FDR_THRESHOLD": FDR_THRESHOLD,

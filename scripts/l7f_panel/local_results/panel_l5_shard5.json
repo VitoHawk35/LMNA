@@ -1,0 +1,137 @@
+{
+  "side": "l5",
+  "shard": "5/7",
+  "params": {
+    "ALGO_VERSION": "2",
+    "DATA_PROVIDER": "l5",
+    "KS_THRESHOLD": 0.2,
+    "FDR_THRESHOLD": 0.001,
+    "BOOTSTRAP_N": 100000,
+    "RANDOM_SEED": 42,
+    "FAST_MODE_TOP_N": 0,
+    "MAX_GENES_PER_DIRECTION": 50,
+    "DRUG_NULL_N": 10000
+  },
+  "grading_thresholds": {
+    "RULE_VERSION": "4.5",
+    "SUITABILITY_MIN_SIG": 5,
+    "SUITABILITY_YELLOW_MIN_SIG": 20,
+    "SUITABILITY_JACCARD_GREEN": 0.5,
+    "SUITABILITY_JACCARD_RED": 0.3
+  },
+  "n_drugs": 19811,
+  "coverage": {
+    "CDK4": {
+      "n_samples": 71,
+      "n_hairpins": 11,
+      "in_available_genes": true
+    },
+    "JAK2": {
+      "n_samples": 50,
+      "n_hairpins": 11,
+      "in_available_genes": true
+    },
+    "PLK1": {
+      "n_samples": 43,
+      "n_hairpins": 11,
+      "in_available_genes": true
+    }
+  },
+  "targets": {
+    "CDK4": {
+      "n_samples": 71,
+      "n_hairpins": 11,
+      "n_cells": 11,
+      "n_sig": 83,
+      "n_up": 22,
+      "n_down": 50,
+      "loho_jaccard_min": 0.6363636363636364,
+      "grade": "green",
+      "rule_version": "4.5",
+      "n_excluded_nan_genes": 0,
+      "target_median_z": -3.36329984664917,
+      "auroc_self": 0.8154617662897146,
+      "gold_found": [
+        "palbociclib",
+        "alvocidib",
+        "cyc202"
+      ],
+      "gold_missing": [
+        "lee011",
+        "abemaciclib",
+        "dinaciclib"
+      ],
+      "gold_best_rank": 187,
+      "gold_ranks": [
+        187,
+        431,
+        10354
+      ],
+      "gold_top50_hits": 0,
+      "frac_drugs_fdr_reversal_lt_0.05": 0.053303720155469185
+    },
+    "JAK2": {
+      "n_samples": 50,
+      "n_hairpins": 11,
+      "n_cells": 11,
+      "n_sig": 0,
+      "n_up": 0,
+      "n_down": 0,
+      "loho_jaccard_min": 0.25,
+      "grade": "red",
+      "rule_version": "4.5",
+      "n_excluded_nan_genes": 0,
+      "target_median_z": null,
+      "auroc_self": 0.5,
+      "gold_found": [
+        "incb018424",
+        "cyt387",
+        "cep-701"
+      ],
+      "gold_missing": [
+        "fedratinib",
+        "baricitinib",
+        "azd1480"
+      ],
+      "gold_best_rank": 1,
+      "gold_ranks": [
+        1,
+        1,
+        1
+      ],
+      "gold_top50_hits": 3,
+      "frac_drugs_fdr_reversal_lt_0.05": 0.0
+    },
+    "PLK1": {
+      "n_samples": 43,
+      "n_hairpins": 11,
+      "n_cells": 9,
+      "n_sig": 16,
+      "n_up": 4,
+      "n_down": 12,
+      "loho_jaccard_min": 0.45454545454545453,
+      "grade": "red",
+      "rule_version": "4.5",
+      "n_excluded_nan_genes": 0,
+      "target_median_z": -1.4196933507919312,
+      "auroc_self": 0.799409359382099,
+      "gold_found": [
+        "bi-2536",
+        "on-01910"
+      ],
+      "gold_missing": [
+        "bi-6727",
+        "gsk461364"
+      ],
+      "gold_best_rank": 2560,
+      "gold_ranks": [
+        2560,
+        5390
+      ],
+      "gold_top50_hits": 0,
+      "frac_drugs_fdr_reversal_lt_0.05": 0.0
+    }
+  },
+  "negative_control": {},
+  "elapsed_s": 886.0
+}

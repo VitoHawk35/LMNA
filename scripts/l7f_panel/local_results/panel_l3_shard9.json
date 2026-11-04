@@ -1,0 +1,91 @@
+{
+  "side": "l3",
+  "shard": "9/11",
+  "params": {
+    "ALGO_VERSION": "2",
+    "DATA_PROVIDER": "l3",
+    "KS_THRESHOLD": 0.2,
+    "FDR_THRESHOLD": 0.001,
+    "BOOTSTRAP_N": 100000,
+    "RANDOM_SEED": 42,
+    "FAST_MODE_TOP_N": 0,
+    "MAX_GENES_PER_DIRECTION": 50,
+    "DRUG_NULL_N": 10000
+  },
+  "grading_thresholds": {
+    "RULE_VERSION": "4.5",
+    "SUITABILITY_MIN_SIG": 5,
+    "SUITABILITY_YELLOW_MIN_SIG": 20,
+    "SUITABILITY_JACCARD_GREEN": 0.5,
+    "SUITABILITY_JACCARD_RED": 0.3
+  },
+  "n_drugs": 19811,
+  "coverage": {
+    "ERBB2": {
+      "n_samples": 313,
+      "n_hairpins": 9,
+      "in_available_genes": true
+    },
+    "TP53": {
+      "n_samples": 196,
+      "n_hairpins": 7,
+      "in_available_genes": true
+    }
+  },
+  "targets": {
+    "ERBB2": {
+      "n_samples": 313,
+      "n_hairpins": 9,
+      "n_cells": 14,
+      "n_sig": 28,
+      "n_up": 7,
+      "n_down": 21,
+      "loho_jaccard_min": 0.3023255813953488,
+      "grade": "yellow",
+      "rule_version": "4.5",
+      "n_excluded_nan_genes": 250,
+      "target_median_z": -2.116175889968872,
+      "auroc_self": 0.28932646672725437,
+      "gold_found": [
+        "lapatinib",
+        "hki-272",
+        "afatinib",
+        "canertinib",
+        "ekb-569"
+      ],
+      "gold_missing": [],
+      "gold_best_rank": 10394,
+      "gold_ranks": [
+        10394,
+        11527,
+        16116,
+        16169,
+        16187
+      ],
+      "gold_top50_hits": 0,
+      "frac_drugs_fdr_reversal_lt_0.05": 0.0
+    },
+    "TP53": {
+      "n_samples": 196,
+      "n_hairpins": 7,
+      "n_cells": 12,
+      "n_sig": 79,
+      "n_up": 27,
+      "n_down": 50,
+      "loho_jaccard_min": 0.5098039215686274,
+      "grade": "green",
+      "rule_version": "4.5",
+      "n_excluded_nan_genes": 250,
+      "target_median_z": -3.1834874153137207,
+      "auroc_self": null,
+      "gold_found": [],
+      "gold_missing": [],
+      "gold_best_rank": null,
+      "gold_ranks": [],
+      "gold_top50_hits": 0,
+      "frac_drugs_fdr_reversal_lt_0.05": 0.0021200343243652515
+    }
+  },
+  "negative_control": {},
+  "elapsed_s": 3003.8
+}

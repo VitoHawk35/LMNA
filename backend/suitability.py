@@ -6,12 +6,15 @@
 规则依据：报告 4.4 修订版（以 LOHO 稳定性为核心，不再使用旧的 13 项打分），
 D1 起追加防线2 规则（RULE_VERSION 4.5）：目标基因是 landmark 但敲低后自身
 KS > 0（自身未下降）时，最高只给黄档。
+L7f 起重校准黄档下限（RULE_VERSION 4.6）：黄档 n_sig 阈值 20→5，修复
+L3 口径下 n_sig∈[5,20) 且 LOHO∈[0.3,0.5) 的"空隙区"误判红档
+（依据：docs/design/L7f-规则表重校准.md，21 靶点面板，方案 A）。
 
 档位（依次判断）：
     red    : 独立 hairpin（pert_id 去重）< 2；或算不出签名 / n_sig < 5；
              或 fast_mode_used；或注释判定"不表达 / 组织特异受体或通道"；
              或不满足黄/绿档。
-    yellow : n_sig >= 20 且 loho_jaccard_min ∈ [0.3, 0.5)；
+    yellow : n_sig >= 5 且 loho_jaccard_min ∈ [0.3, 0.5)；
              或满足绿档条件但注释提示"组织专有"；
              或满足绿档条件但目标基因自身 KS > 0（D1）。
     green  : n_sig >= 5 且 loho_jaccard_min >= 0.5。
@@ -35,7 +38,11 @@ import pandas as pd
 
 import config
 
-RULE_VERSION = "4.5"
+RULE_VERSION = "4.6"
+
+# 4.5 时代的黄档 n_sig 下限；4.6 起仅用于识别"升黄者"（原空隙区成员），
+# 给它们更谨慎的理由文案，不再参与判档。
+_LEGACY_YELLOW_MIN_SIG = 20
 
 # 注释表读取缓存：path -> (mtime, DataFrame)
 _ANNOTATION_CACHE: Dict[str, Tuple[float, pd.DataFrame]] = {}
@@ -199,6 +206,7 @@ def loho_jaccard_min(
     G: int,
     k: Optional[int] = None,
     min_remaining: Optional[int] = None,
+    gene_valid_mask: Optional[np.ndarray] = None,
 ) -> Tuple[Optional[float], Dict]:
     """
     计算留一 hairpin 的签名 Jaccard 最小值。
@@ -210,6 +218,8 @@ def loho_jaccard_min(
         G: 基因数（KS 的分母）。
         k: 取前 k 个基因；缺省时使用 len(full_top_indices)。
         min_remaining: 去掉一条 hairpin 后至少剩余的样本数，缺省 3。
+        gene_valid_mask: (G,) bool，False 的基因（L7e：MAD=0 剔除基因）
+            不进 top 集；缺省 None = 全部有效（行为与旧版一致）。
 
     Returns:
         (min_jaccard, detail)
@@ -246,6 +256,9 @@ def loho_jaccard_min(
 
         sub_ranks = ranks[:, keep]
         ks = ks_uniform_batch(sub_ranks, G)
+        if gene_valid_mask is not None:
+            # 剔除基因的秩含哨兵 0，KS 为伪值；置 0 使其不进 top 集
+            ks = np.where(np.asarray(gene_valid_mask, dtype=bool), ks, 0.0)
         top = np.argsort(-np.abs(ks))[:k]
         top_set = {int(i) for i in top}
         union = full_set | top_set
@@ -299,7 +312,7 @@ def grade(
     loho_detail = signature.get("loho_detail") or {}
 
     min_sig = int(getattr(config, "SUITABILITY_MIN_SIG", 5))
-    yellow_min_sig = int(getattr(config, "SUITABILITY_YELLOW_MIN_SIG", 20))
+    yellow_min_sig = int(getattr(config, "SUITABILITY_YELLOW_MIN_SIG", 5))
     jaccard_green = float(getattr(config, "SUITABILITY_JACCARD_GREEN", 0.5))
     jaccard_red = float(getattr(config, "SUITABILITY_JACCARD_RED", 0.3))
 
@@ -399,17 +412,29 @@ def grade(
         )
     elif yellow_core:
         grade_value = "yellow"
-        reasons.append(
-            f"判定为黄档：n_sig={n_sig} >= {yellow_min_sig} 且 "
-            f"LOHO Jaccard={loho:.3f} 在 [{jaccard_red:g}, {jaccard_green:g}) 区间；"
-            "照常给出药物列表，但建议再补一种证据"
-        )
+        if n_sig < _LEGACY_YELLOW_MIN_SIG:
+            # 升黄者（4.5 空隙区成员）：稳定性中等且签名偏薄，给更谨慎的指引
+            reasons.append(
+                f"判定为黄档：签名稳定性中等（LOHO Jaccard={loho:.3f} ∈ "
+                f"[{jaccard_red:g}, {jaccard_green:g})）且显著基因数偏少"
+                f"（n_sig={n_sig}）：药物列表照常给出，但命中信心低于典型黄档；"
+                "建议优先选排名靠前且机制明确的候选，并补一种正交证据"
+                "（如第二种细胞系或 CRISPR 复敲）再做湿实验"
+            )
+        else:
+            reasons.append(
+                f"判定为黄档：n_sig={n_sig} >= {yellow_min_sig} 且 "
+                f"LOHO Jaccard={loho:.3f} 在 [{jaccard_red:g}, {jaccard_green:g}) 区间；"
+                "照常给出药物列表，但建议再补一种证据"
+            )
     else:
+        # 默认阈值下不可达（黄档下限已对齐绿档 n_sig=5）；
+        # 仅当 SUITABILITY_YELLOW_MIN_SIG 被环境变量调高时才会走到这里
         grade_value = "red"
         reasons.append(
-            f"未满足绿档（n_sig >= {min_sig} 且 Jaccard >= {jaccard_green:g}）"
-            f"或黄档（n_sig >= {yellow_min_sig} 且 Jaccard 在 "
-            f"[{jaccard_red:g}, {jaccard_green:g})）条件"
+            f"签名稳定性不足：n_sig={n_sig}、LOHO Jaccard={loho:.3f}，"
+            f"未达到黄档条件（n_sig >= {yellow_min_sig} 且 Jaccard 在 "
+            f"[{jaccard_red:g}, {jaccard_green:g}) 区间），不给药物列表"
         )
 
     # ---- D1 防线2：landmark 靶基因敲低后自身未下降 → 最高黄档 ----
